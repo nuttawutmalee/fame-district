@@ -10,9 +10,11 @@ require('dotenv').config({
 // eslint-disable-next-line
 require('regenerator-runtime/runtime');
 
+const { WEBSITE_TITLE, PRISMIC_REPOSITORY_NAME, PRISMIC_ACCESS_TOKEN } = process.env;
+
 module.exports = {
   siteMetadata: {
-    title: 'Fame District',
+    title: WEBSITE_TITLE,
   },
   plugins: [
     'gatsby-transformer-sharp',
@@ -20,7 +22,8 @@ module.exports = {
     {
       resolve: 'gatsby-source-prismic',
       options: {
-        repositoryName: 'fame-',
+        repositoryName: PRISMIC_REPOSITORY_NAME,
+        accessToken: PRISMIC_ACCESS_TOKEN,
       },
     },
     {
@@ -60,8 +63,8 @@ module.exports = {
     {
       resolve: 'gatsby-plugin-manifest',
       options: {
-        name: 'Fame District',
-        short_name: 'Palo IT',
+        name: WEBSITE_TITLE,
+        short_name: 'Fame District',
         start_url: '/',
         background_color: '#FFFFFF',
         theme_color: '#FFFFFF',
