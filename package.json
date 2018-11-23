@@ -4,6 +4,7 @@
   "description": "Website built from Prismic, Gatsby, and React.",
   "main": "n/a",
   "scripts": {
+    "dev": "gatsby develop",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
