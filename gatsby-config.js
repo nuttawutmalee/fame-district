@@ -3,3 +3,73 @@
  *
  * See: https://www.gatsbyjs.org/docs/gatsby-config
  */
+
+require('dotenv').config({
+  path: `.env.${process.env.NODE_ENV}`,
+});
+// eslint-disable-next-line
+require('regenerator-runtime/runtime');
+
+module.exports = {
+  siteMetadata: {
+    title: 'Fame District',
+  },
+  plugins: [
+    'gatsby-transformer-sharp',
+    'gatsby-plugin-sharp',
+    {
+      resolve: 'gatsby-source-prismic',
+      options: {
+        repositoryName: 'fame-',
+      },
+    },
+    {
+      resolve: 'gatsby-plugin-react-svg',
+      options: {
+        include: /assets/,
+      },
+    },
+    'gatsby-plugin-sitemap',
+    'gatsby-plugin-styled-components',
+    'gatsby-plugin-react-helmet',
+    // {
+    //   resolve: 'gatsby-plugin-google-analytics',
+    //   options: {
+    //     trackingId: GA_CODE,
+    //     head: false,
+    //     anonymize: true,
+    //     respectDNT: true,
+    //     exclude: [],
+    //   },
+    // },
+    // {
+    //   resolve: 'gatsby-plugin-robots-txt',
+    //   options: {
+    //     host: URL,
+    //     sitemap: `${URL}/sitemap.xml`,
+    //     env: {
+    //       development: {
+    //         policy: [{ userAgent: '*', disallow: ['/'] }],
+    //       },
+    //       production: {
+    //         policy: [{ userAgent: '*', allow: '/' }],
+    //       },
+    //     },
+    //   },
+    // },
+    {
+      resolve: 'gatsby-plugin-manifest',
+      options: {
+        name: 'Fame District',
+        short_name: 'Palo IT',
+        start_url: '/',
+        background_color: '#FFFFFF',
+        theme_color: '#FFFFFF',
+        display: 'minimal-ui',
+        icon: 'static/favicons/android-icon-192x192.png',
+      },
+    },
+    'gatsby-plugin-offline',
+    'gatsby-plugin-meta-redirect',
+  ],
+};
