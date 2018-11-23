@@ -9,7 +9,7 @@ module.exports = {
     'react/jsx-filename-extension': 0,
     'object-curly-newline': 0,
     'no-plusplus': 0,
-    'react/forbin-prop-types': [2, { forbid: ['any'] }],
+    'react/forbid-prop-types': [2, { forbid: ['any'] }],
     'react/no-danger': 0,
     'arrow-body-style': 0,
     'jsx-a11y/anchor-is-valid': [
