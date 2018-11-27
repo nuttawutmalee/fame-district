@@ -4,7 +4,8 @@ import withFullHeight from '../../helpers/withFullHeight';
 import { fp, landscape, portrait } from '../../mixins/common';
 import { mediaBreakpointUp, mediaBreakpointDown } from '../../mixins/breakpoint';
 
-const HeroSection = styled(withFullHeight()(section))`
+const HeroSection = styled(withFullHeight()('div'))`
+  ${section};
   position: relative;
   background-color: #ececec;
   height: 100vh;

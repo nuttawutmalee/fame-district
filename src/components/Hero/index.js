@@ -41,11 +41,11 @@ class Hero extends React.Component {
   }
 
   render() {
-    const { title, firstVideo, secondVideo, thirdVideo, fourthVideo, fifthVideo } = this.props;
+    const { id, title, firstVideo, secondVideo, thirdVideo, fourthVideo, fifthVideo } = this.props;
     const { currentIndex } = this.state;
 
     return (
-      <HeroSection>
+      <HeroSection id={id}>
         <HeroInnerBlock>
           <HeroFullBlock>
             <FrameContainer>
@@ -142,10 +142,12 @@ class Hero extends React.Component {
 }
 
 Hero.defaultProps = {
+  id: 'hero',
   title: null,
 };
 
 Hero.propTypes = {
+  id: PropTypes.string,
   title: PropTypes.object,
   firstVideo: PropTypes.shape({
     poster: PropTypes.object,

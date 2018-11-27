@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import configureStore from '../store/configureStore';
 import Layout from '../layouts';
 import Hero from '../components/Hero';
+import Concept from '../components/Concept';
 
 const store = configureStore();
 
@@ -62,6 +63,20 @@ const IndexTemplate = (props) => {
                       fifthVideo={{
                         poster: get(section, 'primary.fifth_video_poster'),
                         url: get(section, 'primary.fifth_video.url'),
+                      }}
+                    />
+                  );
+                case 'PrismicPageBodyConcept':
+                  return (
+                    <Concept
+                      key={get(section, 'id')}
+                      title={get(section, 'primary.section_title')}
+                      subtitle={get(section, 'primary.section_subtitle')}
+                      description={get(section, 'primary.section_description')}
+                      sideImage={get(section, 'primary.side_image')}
+                      video={{
+                        poster: get(section, 'primary.video_poster'),
+                        url: get(section, 'primary.video.url'),
                       }}
                     />
                   );
