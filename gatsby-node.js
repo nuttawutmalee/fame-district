@@ -44,14 +44,12 @@ exports.onCreatePage = async ({ page, actions }) => {
 
       newPage.component = path.resolve('src/templates/index.js');
       newPage.context = {
-        slug: 'Prismic__Page__W_faxBEAADQAW6Hm',
+        slug: 'Prismic__Page__W_wmIBAAACoAYSOb',
         language: 'en-us',
       };
 
       deletePage(oldPage);
       createPage(newPage);
-
-      console.log(newPage);
 
       return resolve(true);
     });

@@ -7,12 +7,18 @@ export const PageFragment = graphql`
     lang
     data {
       url
-      page_title
-      page_description
-      page_keywords
+      meta_title
+      meta_description
+      meta_keywords
       body {
         __typename
         ...Hero
+        ...Concept
+        ...Overview
+        ...LeftSideContent
+        ...RightSideContent
+        ...ThreeImagesContent
+        ...DoubleSideContent
       }
     }
   }
