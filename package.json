@@ -1,5 +1,5 @@
 {
-  "name": "fame-district",
+  "name": "wink-hotels",
   "version": "1.0.0",
   "description": "Website built from Prismic, Gatsby, and React.",
   "main": "n/a",
@@ -9,19 +9,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuttawutmalee/fame-district.git"
+    "url": "git+https://github.com/nuttawutmalee/wink-hotels.git"
   },
   "author": "Nuttawut Malee <nuttawutmalee@gmail.com>",
   "license": "ISC",
   "keywords": [
+    "website",
     "gatsby",
+    "prismic",
     "react",
     "styled-components"
   ],
   "bugs": {
-    "url": "https://github.com/nuttawutmalee/fame-district/issues"
+    "url": "https://github.com/nuttawutmalee/wink-hotels/issues"
   },
-  "homepage": "https://github.com/nuttawutmalee/fame-district#readme",
+  "homepage": "https://github.com/nuttawutmalee/wink-hotels#readme",
   "dependencies": {
     "axios": "^0.18.0",
     "babel-plugin-styled-components": "^1.8.0",
@@ -45,6 +47,7 @@
     "gatsby-source-filesystem": "^2.0.8",
     "gatsby-source-prismic": "^2.1.0",
     "gatsby-transformer-sharp": "^2.1.8",
+    "glslify-loader": "^1.0.2",
     "intl": "^1.2.5",
     "lodash": "^4.17.11",
     "prop-types": "^15.6.2",
@@ -57,7 +60,8 @@
     "react-loader-spinner": "^2.2.0",
     "react-redux": "^5.1.1",
     "redux": "^4.0.1",
-    "styled-components": "^4.1.1"
+    "styled-components": "^4.1.1",
+    "three": "^0.98.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

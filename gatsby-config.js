@@ -63,7 +63,7 @@ module.exports = {
       resolve: 'gatsby-plugin-manifest',
       options: {
         name: WEBSITE_TITLE,
-        short_name: 'Fame District',
+        short_name: 'Wink',
         start_url: '/',
         background_color: '#FFFFFF',
         theme_color: '#FFFFFF',

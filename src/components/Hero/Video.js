@@ -51,7 +51,7 @@ class Video extends React.Component {
         )}
         <VideoBlock>
           <VideoStyle
-            poster={poster && get(poster, 'localFile.childImageSharp.fluid')}
+            poster={poster && get(poster, 'localFile.childImageSharp.fluid.src')}
             muted
             playsInline
             ref={(el) => {

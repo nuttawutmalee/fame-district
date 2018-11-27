@@ -12,6 +12,7 @@ import { PageContainer, MainContainer } from './global-styled';
 
 import Loading from '../components/Common/Loading';
 import Header from '../components/Common/Header';
+import Bokeh from '../components/Common/Bokeh';
 
 const Layout = ({ children, data, loaded }) => {
   const windowGlobal = typeof window !== 'undefined' && window;
@@ -58,6 +59,7 @@ const Layout = ({ children, data, loaded }) => {
       <Loading />
       <PageContainer loaded={loaded}>
         <MainContainer loaded={loaded}>{children}</MainContainer>
+        <Bokeh />
       </PageContainer>
     </div>
   );
