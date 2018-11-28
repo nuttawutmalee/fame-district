@@ -5,10 +5,10 @@
  */
 
 const path = require('path');
-const {
-  PrismicPageQuery,
-  PrismicPageGenerator,
-} = require('./gatsby-nodes/PrismicPages/PrismicPageGenerator');
+// const {
+//   PrismicPageQuery,
+//   PrismicPageGenerator,
+// } = require('./gatsby-nodes/PrismicPages/PrismicPageGenerator');
 
 exports.onCreateWebpackConfig = ({ actions, stage, getConfig }) => {
   // Adding polyfills
@@ -58,30 +58,30 @@ exports.onCreatePage = async ({ page, actions }) => {
   return Promise.resolve(true);
 };
 
-exports.createPages = async ({ actions, graphql }) => {
-  const { createPage } = actions;
+// exports.createPages = async ({ actions, graphql }) => {
+//   const { createPage } = actions;
 
-  try {
-    const pages = await graphql(`
-      {
-        ${PrismicPageQuery}
-      }
-    `);
+//   try {
+//     const pages = await graphql(`
+//       {
+//         ${PrismicPageQuery}
+//       }
+//     `);
 
-    if (pages.errors) {
-      return Promise.reject(pages.errors);
-    }
+//     if (pages.errors) {
+//       return Promise.reject(pages.errors);
+//     }
 
-    const { data } = pages;
-    const { allPrismicPage } = data;
+//     const { data } = pages;
+//     const { allPrismicPage } = data;
 
-    console.log('+++++++++++++  CREATE WEBSITE  +++++++++++++');
-    console.log('---------------  LIST PAGES  ---------------');
-    PrismicPageGenerator(allPrismicPage.edges, createPage);
+//     console.log('+++++++++++++  CREATE WEBSITE  +++++++++++++');
+//     console.log('---------------  LIST PAGES  ---------------');
+//     PrismicPageGenerator(allPrismicPage.edges, createPage);
 
-    return Promise.resolve(true);
-  } catch (err) {
-    console.log(err);
-    return Promise.reject(err);
-  }
-};
+//     return Promise.resolve(true);
+//   } catch (err) {
+//     console.log(err);
+//     return Promise.reject(err);
+//   }
+// };

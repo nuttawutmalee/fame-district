@@ -4,6 +4,7 @@ export const ThreeImagesContentFragment = graphql`
   fragment ThreeImagesContent on PrismicPageBodyThreeImagesContent {
     id
     primary {
+      menu_title
       section_title {
         html
         text

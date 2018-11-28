@@ -1,12 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { HeaderContainer, HeaderInnerBlock, LogoBlock, LogoLink, Logo } from './header-styled';
+import {
+  HeaderContainer,
+  HeaderInnerBlock,
+  LogoBlock,
+  LogoLink,
+  Logo,
+  MenuNav,
+  MenuList,
+  MenuListItem,
+  MenuLink,
+} from './header-styled';
 // import { mapLanguage } from '../../utils/tools';
 
 class Header extends React.Component {
   constructor(props) {
     super(props);
     this.onScroll = this.onScroll.bind(this);
+    this.onMenuItemClicked = this.onMenuItemClicked.bind(this);
     this.state = {
       scrollY: 0,
     };
@@ -25,12 +36,25 @@ class Header extends React.Component {
     this.setState({ scrollY: window.scrollY });
   }
 
+  // eslint-disable-next-line
+  onMenuItemClicked(id) {
+    return (e) => {
+      e.preventDefault();
+      const target = window.document.getElementById(id);
+
+      if (target) {
+        window.scrollTo({
+          top: target.offsetTop,
+          behavior: 'smooth',
+        });
+      }
+    };
+  }
+
   render() {
-    const { loaded } = this.props;
+    const { loaded, menuItems = [] } = this.props;
     const { scrollY } = this.state;
     const hide = scrollY > 100;
-
-    console.log(hide);
 
     return (
       <HeaderContainer loaded={loaded}>
@@ -40,72 +64,64 @@ class Header extends React.Component {
               <Logo />
             </LogoLink>
           </LogoBlock>
-          {/* <nav id="main-menu">
-          <ul>
-            <li>
-              <a href="#" b-scroll-to="#concept">
-                Concept
-              </a>
-            </li>
-            <li>
-              <a href="#" b-scroll-to="#the-first-wink">
-                The First wink
-              </a>
-            </li>
-            <li>
-              <a href="#" b-scroll-to="#hotels">
-                Hotels
-              </a>
-            </li>
-            <li>
-              <a href="#" b-scroll-to="#residences">
-                Residences
-              </a>
-            </li>
-            <li>
-              <a href="#" b-scroll-to="#experiences">
-                Experiences
-              </a>
-            </li>
-            <li>
-              <a href="#" b-scroll-to="#about">
-                Contact
-              </a>
-            </li>
-          </ul>
-        </nav>
-        <div className="h-social">
-          <ul>
-            <li>
-              <a href="https://www.facebook.com/WinkHotels/" target="_blank">
-                <i className="icon-facebook" />
-              </a>
-            </li>
-            <li>
-              <a href="https://twitter.com/winkhotels" target="_blank">
-                <i className="icon-twitter" />
-              </a>
-            </li>
-            <li>
-              <a href="https://www.instagram.com/winkhotels/" target="_blank">
-                <i className="icon-instagram" />
-              </a>
-            </li>
-            <li>
-              <a href="mailto:chi.l.dang@indochinavanguard.com">
-                <i className="icon-envelope" />
-              </a>
-            </li>
-          </ul>
-        </div> */}
+          <MenuNav>
+            <MenuList>
+              {menuItems.map(
+                ({ id, title }) => typeof title !== 'undefined' && (
+                <MenuListItem key={id}>
+                  <MenuLink href="#" onClick={this.onMenuItemClicked(id)}>
+                    {String(title).toLocaleUpperCase()}
+                  </MenuLink>
+                </MenuListItem>
+                ),
+              )}
+            </MenuList>
+          </MenuNav>
+          <div className="h-social">
+            <ul>
+              <li>
+                <a
+                  href="https://www.facebook.com/WinkHotels/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="icon-facebook" />
+                </a>
+              </li>
+              <li>
+                <a href="https://twitter.com/winkhotels" target="_blank" rel="noopener noreferrer">
+                  <i className="icon-twitter" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/winkhotels/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="icon-instagram" />
+                </a>
+              </li>
+              <li>
+                <a href="mailto:chi.l.dang@indochinavanguard.com">
+                  <i className="icon-envelope" />
+                </a>
+              </li>
+            </ul>
+          </div>
         </HeaderInnerBlock>
       </HeaderContainer>
     );
   }
 }
 
+Header.defaultProps = {
+  menuItems: [],
+};
+
 Header.propTypes = {
   loaded: PropTypes.bool.isRequired,
+  menuItems: PropTypes.array,
 };
 
 export default Header;

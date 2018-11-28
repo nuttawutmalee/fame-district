@@ -4,6 +4,7 @@ export const ConceptFragment = graphql`
   fragment Concept on PrismicPageBodyConcept {
     id
     primary {
+      menu_title
       section_title {
         html
         text

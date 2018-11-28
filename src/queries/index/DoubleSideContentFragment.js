@@ -4,6 +4,7 @@ export const DoubleSideContentFragment = graphql`
   fragment DoubleSideContent on PrismicPageBodyDoubleSideContent {
     id
     primary {
+      menu_title
       first_section_title {
         html
         text

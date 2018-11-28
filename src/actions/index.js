@@ -3,10 +3,15 @@ const setLoaded = loaded => ({
   loaded,
 });
 
-const setRefs = (name, ref) => ({
-  type: 'SET_REF',
-  name,
-  ref,
+const addMenu = (id, title) => ({
+  type: 'ADD_MENU',
+  id,
+  title,
 });
 
-export { setLoaded, setRefs };
+const removeMenu = id => ({
+  type: 'REMOVE_MENU',
+  id,
+});
+
+export { setLoaded, addMenu, removeMenu };

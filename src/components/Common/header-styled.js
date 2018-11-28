@@ -120,4 +120,85 @@ const LogoBlock = styled.div`
     `};
 `;
 
-export { HeaderContainer, HeaderInnerBlock, LogoBlock, LogoLink, Logo };
+const MenuList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+`;
+
+const MenuListItem = styled.li`
+  display: inline-block;
+  text-align: center;
+  position: relative;
+
+  ${mediaBreakpointUp('lg')`
+    ${fp('margin-right', 15, 30, 992, 1150)};
+  `};
+
+  &:last-child {
+    margin-right: 0;
+  }
+`;
+
+const MenuLink = styled.a`
+  position: relative;
+  display: inline-block;
+  color: #4c4c4c;
+  font-family: var(--font-lato-bold);
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0.11em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  transition: all 0.3s ease-in-out;
+
+  &:after {
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1px;
+    margin: auto;
+    background-color: var(--brand);
+    opacity: 0;
+    -webkit-transform: scaleX(0);
+    transform: scaleX(0);
+    -webkit-transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      -webkit-transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      -webkit-transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), -webkit-transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover,
+  &.active {
+    color: var(--brand);
+  }
+`;
+
+const MenuNav = styled.nav`
+  display: inline-block;
+
+  ${mediaBreakpointDown('md')`
+    display: none;
+  `};
+`;
+
+export {
+  HeaderContainer,
+  HeaderInnerBlock,
+  LogoBlock,
+  LogoLink,
+  Logo,
+  MenuNav,
+  MenuList,
+  MenuListItem,
+  MenuLink,
+};

@@ -14,7 +14,7 @@ import Loading from '../components/Common/Loading';
 import Header from '../components/Common/Header';
 import Bokeh from '../components/Common/Bokeh';
 
-const Layout = ({ children, data, loaded }) => {
+const Layout = ({ children, data, loaded, menu }) => {
   const windowGlobal = typeof window !== 'undefined' && window;
 
   return (
@@ -58,7 +58,7 @@ const Layout = ({ children, data, loaded }) => {
       </Helmet>
       <Loading />
       <PageContainer loaded={loaded}>
-        <Header loaded={loaded} />
+        <Header loaded={loaded} menuItems={menu} />
         <MainContainer loaded={loaded}>{children}</MainContainer>
         <Bokeh />
       </PageContainer>
@@ -70,10 +70,12 @@ Layout.propTypes = {
   children: PropTypes.object.isRequired,
   data: PropTypes.object.isRequired,
   loaded: PropTypes.bool.isRequired,
+  menu: PropTypes.array.isRequired,
 };
 
-const mapStateToProps = ({ status }) => ({
+const mapStateToProps = ({ menu, status }) => ({
   loaded: status.loaded,
+  menu,
 });
 
 export default connect(mapStateToProps)(Layout);

@@ -4,6 +4,7 @@ export const OverviewFragment = graphql`
   fragment Overview on PrismicPageBodyOverview {
     id
     primary {
+      menu_title
       section_title {
         html
         text

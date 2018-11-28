@@ -6,7 +6,6 @@ export const PageFragment = graphql`
     type
     lang
     data {
-      url
       meta_title
       meta_description
       meta_keywords
