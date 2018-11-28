@@ -134,9 +134,9 @@ export default createGlobalStyle`
     --form-input-font-size:            20px;
     --form-input-line-height:          normal;
     --form-input-height:               45px;
-    --form-input-border:               1px solid rgba(#9fa1a2,0.8);
+    --form-input-border:               1px solid rgba(159, 161, 162, 0.8);
     --form-input-radius:               0;
-    --form-input-bg-color:             rgba(var(--white),0.8);
+    --form-input-bg-color:             rgba(255, 255, 255 ,0.8);
     --form-input-padding-x:            15px;
     --form-input-padding-y:            0;
     

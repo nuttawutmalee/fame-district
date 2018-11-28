@@ -58,6 +58,7 @@ const Layout = ({ children, data, loaded }) => {
       </Helmet>
       <Loading />
       <PageContainer loaded={loaded}>
+        <Header loaded={loaded} />
         <MainContainer loaded={loaded}>{children}</MainContainer>
         <Bokeh />
       </PageContainer>

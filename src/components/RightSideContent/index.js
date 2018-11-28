@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
 import {
-  ConceptSection,
-  ConceptInnerBlock,
-  ConceptSectionContainer,
+  RightSideContentSection,
+  RightSideContentSectionInner,
+  RightSideContentSectionContainer,
   ContentWrapper,
   ContentBlock,
   ContentTitleBlock,
@@ -12,14 +12,13 @@ import {
   ContentColumnBlock,
   ContentFigure,
   ContentFigureImage,
-  Content,
-} from './concept-styled';
+} from './rightsidecontent-styled';
 
-const Concept = ({ id, title, subtitle, description, sideImage, video }) => {
+const RightSideContent = ({ id, title, subtitle, description, sideImage }) => {
   return (
-    <ConceptSection id={id}>
-      <ConceptInnerBlock>
-        <ConceptSectionContainer>
+    <RightSideContentSection id={id}>
+      <RightSideContentSectionInner>
+        <RightSideContentSectionContainer>
           <ContentWrapper>
             <ContentBlock level={1}>
               {title && title.html && (
@@ -32,7 +31,7 @@ const Concept = ({ id, title, subtitle, description, sideImage, video }) => {
                 <div dangerouslySetInnerHTML={{ __html: description.html }} />
               )}
             </ContentBlock>
-            <ContentColumnBlock top first level={3}>
+            <ContentColumnBlock top level={2}>
               {sideImage && (
                 <ContentFigure ratio>
                   <ContentFigureImage
@@ -43,46 +42,27 @@ const Concept = ({ id, title, subtitle, description, sideImage, video }) => {
                 </ContentFigure>
               )}
             </ContentColumnBlock>
-            <ContentColumnBlock top second level={2}>
-              {video && (
-                <Content ratio>
-                  <video
-                    controls
-                    poster={get(video, 'poster.localFile.childImageSharp.fluid.src')}
-                    width="100%"
-                  >
-                    <track kind="captions" />
-                    <source src={get(video, 'url')} />
-                  </video>
-                </Content>
-              )}
-            </ContentColumnBlock>
           </ContentWrapper>
-        </ConceptSectionContainer>
-      </ConceptInnerBlock>
-    </ConceptSection>
+        </RightSideContentSectionContainer>
+      </RightSideContentSectionInner>
+    </RightSideContentSection>
   );
 };
 
-Concept.defaultProps = {
-  id: 'concept',
+RightSideContent.defaultProps = {
+  id: 'right-side-content',
   title: null,
   subtitle: null,
   description: null,
   sideImage: null,
-  video: null,
 };
 
-Concept.propTypes = {
+RightSideContent.propTypes = {
   id: PropTypes.string,
   title: PropTypes.object,
   subtitle: PropTypes.object,
   description: PropTypes.object,
   sideImage: PropTypes.object,
-  video: PropTypes.shape({
-    poster: PropTypes.object,
-    url: PropTypes.string.isRequired,
-  }),
 };
 
-export default Concept;
+export default RightSideContent;

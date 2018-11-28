@@ -13,7 +13,7 @@ const PrismicPageGenerator = (edges, createPage) => {
 
     const mappedLang = mapLanguage(lang);
     const pageUrl = `${mappedLang}/${url}`;
-    const component = path.resolve('src/templates/index.js');
+    const component = path.resolve('src/pages/index.js');
 
     if (pageUrl) {
       console.log('Create Page');

@@ -42,7 +42,7 @@ exports.onCreatePage = async ({ page, actions }) => {
       const newPage = { ...page };
       const oldPage = { ...page };
 
-      newPage.component = path.resolve('src/templates/index.js');
+      newPage.component = path.resolve('src/pages/index.js');
       newPage.context = {
         slug: 'Prismic__Page__W_wmIBAAACoAYSOb',
         language: 'en-us',

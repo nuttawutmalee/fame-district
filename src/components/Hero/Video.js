@@ -32,6 +32,12 @@ class Video extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    if (this.playerRef && this.playerRef.played) {
+      this.playerRef.pause();
+    }
+  }
+
   onPlayerEnded() {
     const { onEnded } = this.props;
     if (typeof onEnded === 'function') {
