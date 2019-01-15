@@ -12,7 +12,7 @@
     "test_coverage": "jest --coverage",
     "lint": "eslint ./src/**/*.js",
     "deploy": "npm run prod && s3-deploy \"./public/**\" --cwd \"./public/\" --region ap-southeast-1 --bucket wink --deleteRemoved --gzip --cache 3600",
-    "start": "gatsby serve -o"
+    "serve": "pm2 startOrRestart ecosystem.config.js"
   },
   "repository": {
     "type": "git",
