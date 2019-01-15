@@ -4,9 +4,15 @@
   "description": "Website built from Prismic, Gatsby, and React.",
   "main": "n/a",
   "scripts": {
-    "start": "npm run dev",
+    "precommit": "npm run lint",
     "dev": "gatsby develop",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prod": "gatsby build",
+    "format": "prettier --trailing-comma es5 --single-quote --write \"src/**/*.js\"",
+    "test": "jest --clearCache && jest",
+    "test_coverage": "jest --coverage",
+    "lint": "eslint ./src/**/*.js",
+    "deploy": "npm run prod && s3-deploy \"./public/**\" --cwd \"./public/\" --region ap-southeast-1 --bucket wink --deleteRemoved --gzip --cache 3600",
+    "start": "gatsby serve -o"
   },
   "repository": {
     "type": "git",
@@ -29,8 +35,9 @@
     "axios": "^0.18.0",
     "babel-plugin-styled-components": "^1.8.0",
     "babel-polyfill": "^6.26.0",
-    "compression-webpack-plugin": "^2.0.0",
+    "body-parser": "^1.18.3",
     "dotenv": "^6.1.0",
+    "express": "^4.16.4",
     "gatsby": "^2.0.55",
     "gatsby-cli": "^2.4.5",
     "gatsby-image": "^2.0.20",
@@ -75,7 +82,8 @@
     "jest": "^23.6.0",
     "npm": "^6.4.1",
     "pre-commit": "^1.2.2",
-    "prettier": "^1.15.2",
-    "redux-logger": "^3.0.6"
+    "prettier": "^1.15.3",
+    "redux-logger": "^3.0.6",
+    "s3-deploy": "^1.2.0"
   }
 }
