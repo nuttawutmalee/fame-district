@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install node
+# install node
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
 source ~/.bashrc
 nvm install node
@@ -13,8 +13,12 @@ sudo apt-get install -y git
 sudo apt-get install --no-install-recommends -y yarn
 sudo apt-get install -y nginx
 
-# Setup nginx
+# setup nginx
+if [ -f /etc/nginx/sites-enabled/default ]; then
 sudo rm /etc/nginx/sites-enabled/default
+fi
+
+if [ ! -f /etc/nginx/sites-available/gatsby ]; then
 sudo sh -c "cat > /etc/nginx/sites-available/gatsby" <<\EOF
 server {
   listen 80;
@@ -28,4 +32,9 @@ server {
 EOF
 
 sudo ln -s /etc/nginx/sites-available/gatsby /etc/nginx/sites-enabled/gatsby
+fi
+
 sudo service nginx restart
+
+sudo mkdir -p /var/www/gatsby
+sudo chmod -R 777 /var/www/gatsby
