@@ -1,3 +1,5 @@
+console.log(process.env.NODE_ENV);
+
 require('dotenv').config({
   path: `.env.${process.env.NODE_ENV}`,
 });
@@ -25,6 +27,8 @@ const validateWebhook = (req, res, next) => {
   if (!body) return next('Empty body');
 
   const { type, secret } = body;
+
+  console.log(process.env.NODE_ENV, WEBHOOK_SECRET, secret, secret !== WEBHOOK_SECRET);
 
   if (secret !== WEBHOOK_SECRET) {
     return next('Unauthorized');
