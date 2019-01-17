@@ -37,5 +37,6 @@ fi
 
 sudo service nginx restart
 
+sudo rm -rf /var/www/gatsby
 sudo mkdir -p /var/www/gatsby
 sudo chmod -R 777 /var/www/gatsby

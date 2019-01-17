@@ -20,8 +20,8 @@ module.exports = {
       ssh_options: 'StrictHostKeyChecking=no',
       repo: 'https://github.com/nuttawutmalee/wink-hotels.git',
       path: '/var/www/gatsby/staging',
-      'pre-setup': 'server.sh --env staging',
-      'post-deploy': 'npm install && npm run serve --env dev',
+      'pre-setup': 'server.sh',
+      'post-deploy': 'yarn install && npm run serve --env dev',
       env: {
         NODE_ENV: 'development',
       },
@@ -34,8 +34,8 @@ module.exports = {
       ssh_options: 'StrictHostKeyChecking=no',
       repo: 'https://github.com/nuttawutmalee/wink-hotels.git',
       path: '/var/www/gatsby/production',
-      'pre-setup': 'server.sh --env production',
-      'post-deploy': 'npm install && npm run serve --env production',
+      'pre-setup': 'server.sh',
+      'post-deploy': 'yarn install && npm run serve --env production',
       env: {
         NODE_ENV: 'production',
       },
