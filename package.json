@@ -5,14 +5,17 @@
   "main": "n/a",
   "scripts": {
     "precommit": "npm run lint",
-    "dev": "gatsby develop",
-    "prod": "gatsby build",
     "format": "prettier --trailing-comma es5 --single-quote --write \"src/**/*.js\"",
     "test": "jest --clearCache && jest",
     "test_coverage": "jest --coverage",
     "lint": "eslint ./src/**/*.js",
-    "deploy": "npm run prod && s3-deploy \"./public/**\" --cwd \"./public/\" --region ap-southeast-1 --bucket wink --deleteRemoved --gzip --cache 3600",
-    "serve": "pm2 startOrRestart ecosystem.config.js"
+    "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "pm2 startOrRestart ecosystem.config.js",
+    "stop": "pm2 stop ecosystem.config.js",
+    "delete": "pm2 delete ecosystem.config.js",
+    "deploy-dev": "npm run build && s3-deploy \"./public/**\" --cwd \"./public/\" --region ap-southeast-1 --bucket wink --deleteRemoved --gzip --cache 3600",
+    "deploy-prod": "npm run build && s3-deploy \"./public/**\" --cwd \"./public/\" --region ap-southeast-1 --bucket wink --deleteRemoved --gzip --cache 3600"
   },
   "repository": {
     "type": "git",
@@ -33,7 +36,7 @@
   "homepage": "https://github.com/nuttawutmalee/wink-hotels#readme",
   "dependencies": {
     "axios": "^0.18.0",
-    "babel-plugin-styled-components": "^1.8.0",
+    "babel-plugin-styled-components": "^1.10.0",
     "babel-polyfill": "^6.26.0",
     "body-parser": "^1.18.3",
     "dotenv": "^6.1.0",
@@ -58,6 +61,7 @@
     "glslify-loader": "^1.0.2",
     "intl": "^1.2.5",
     "lodash": "^4.17.11",
+    "pm2": "^3.2.8",
     "prop-types": "^15.6.2",
     "ptz-i18n": "^0.4.0",
     "react": "^16.6.3",

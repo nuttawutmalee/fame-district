@@ -29,7 +29,7 @@ const Layout = ({ children, data, loaded, menu }) => {
           },
           { name: 'keywords', content: get(data, 'page.data.meta_keywords', 'Wink Hotels') },
         ]}
-        bodyAttributes={{ style: loaded ? '' : 'position: fixed;' }}
+        bodyAttributes={{ style: loaded ? {} : { position: 'fixed' } }}
       />
       <Helmet>
         {/* FAVICONS */}

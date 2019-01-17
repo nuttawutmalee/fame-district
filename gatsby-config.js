@@ -10,11 +10,12 @@ require('dotenv').config({
 // eslint-disable-next-line
 require('regenerator-runtime/runtime');
 
-const { WEBSITE_TITLE, PRISMIC_REPOSITORY_NAME } = process.env;
+const { SITE_TITLE, SITE_URL, PRISMIC_REPOSITORY_NAME } = process.env;
 
 module.exports = {
   siteMetadata: {
-    title: WEBSITE_TITLE,
+    title: SITE_TITLE,
+    siteUrl: SITE_URL,
   },
   plugins: [
     'gatsby-transformer-sharp',
@@ -62,7 +63,7 @@ module.exports = {
     {
       resolve: 'gatsby-plugin-manifest',
       options: {
-        name: WEBSITE_TITLE,
+        name: SITE_TITLE,
         short_name: 'Wink',
         start_url: '/',
         background_color: '#FFFFFF',

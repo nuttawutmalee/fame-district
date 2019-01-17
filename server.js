@@ -4,7 +4,7 @@ require('dotenv').config({
 // eslint-disable-next-line
 require('regenerator-runtime/runtime');
 
-const { PRISMIC_WEBHOOK_PATH, PRISMIC_WEBHOOK_SECRET, NODE_ENV } = process.env;
+const { SERVER_PORT, WEBHOOK_PATH, WEBHOOK_SECRET, NODE_ENV } = process.env;
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -19,24 +19,30 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-const webhookValidator = (req, res, next) => {
+const validateWebhook = (req, res, next) => {
   const { body = null } = req;
 
   if (!body) return next('Empty body');
 
   const { type, secret } = body;
 
-  if (type !== 'api-update' || secret !== PRISMIC_WEBHOOK_SECRET) {
-    return next('Webhook unauthorized');
+  if (secret !== WEBHOOK_SECRET) {
+    return next('Unauthorized');
+  }
+
+  if (type !== 'api-update') {
+    // ignore everything but api-update
+    return res.status(200).end();
   }
 
   return next();
 };
 
 // Webhook endpoint
-app.post(PRISMIC_WEBHOOK_PATH, webhookValidator, async (req, res) => {
+app.post(WEBHOOK_PATH, validateWebhook, async (req, res) => {
   try {
-    const { stdout, stderr } = await exec(`npm run build ${NODE_ENV}`);
+    const cmd = NODE_ENV === 'production' ? 'npm run deploy-prod' : 'npm run deploy-dev';
+    const { stdout, stderr } = await exec(cmd);
 
     if (stdout) {
       // eslint-disable-next-line
@@ -51,6 +57,8 @@ app.post(PRISMIC_WEBHOOK_PATH, webhookValidator, async (req, res) => {
     // eslint-disable-next-line
     console.log('Webhook detected, rebuilding started...');
 
+    // deploy to s3
+
     res.status(200).end();
   } catch (e) {
     res.status(500).end();
@@ -58,4 +66,4 @@ app.post(PRISMIC_WEBHOOK_PATH, webhookValidator, async (req, res) => {
 });
 
 // eslint-disable-next-line
-app.listen(3000, () => console.log(`Webhook app listening on port ${port}!`));
+app.listen(SERVER_PORT, () => console.log(`Webhook app listening on port ${SERVER_PORT}!`));

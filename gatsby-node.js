@@ -19,11 +19,7 @@ exports.onCreateWebpackConfig = ({ actions, stage, getConfig }) => {
       config.entry.commons.unshift('babel-polyfill');
       break;
     case 'build-javascript':
-      if (Array.isArray(config.entry.app)) {
-        config.entry.app = ['babel-polyfill', ...config.entry.app];
-      } else {
-        config.entry.app = ['babel-polyfill', config.entry.app];
-      }
+      config.entry.app = ['babel-polyfill', config.entry.app];
       break;
     default:
       break;

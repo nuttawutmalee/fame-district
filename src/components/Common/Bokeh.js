@@ -189,8 +189,6 @@ class Bokeh extends React.Component {
   }
 
   render() {
-    console.log('BOKEH RENDER');
-
     return (
       <BokehContainer
         ref={(el) => {
