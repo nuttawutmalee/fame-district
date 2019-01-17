@@ -45,21 +45,21 @@ module.exports = {
     //     exclude: [],
     //   },
     // },
-    // {
-    //   resolve: 'gatsby-plugin-robots-txt',
-    //   options: {
-    //     host: URL,
-    //     sitemap: `${URL}/sitemap.xml`,
-    //     env: {
-    //       development: {
-    //         policy: [{ userAgent: '*', disallow: ['/'] }],
-    //       },
-    //       production: {
-    //         policy: [{ userAgent: '*', allow: '/' }],
-    //       },
-    //     },
-    //   },
-    // },
+    {
+      resolve: 'gatsby-plugin-robots-txt',
+      options: {
+        host: SITE_URL,
+        sitemap: `${SITE_URL}/sitemap.xml`,
+        env: {
+          development: {
+            policy: [{ userAgent: '*', disallow: ['/'] }],
+          },
+          production: {
+            policy: [{ userAgent: '*', allow: '/' }],
+          },
+        },
+      },
+    },
     {
       resolve: 'gatsby-plugin-manifest',
       options: {
