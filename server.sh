@@ -3,6 +3,7 @@
 # install node
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
 source ~/.bashrc
+source ~/.nvm/nvm.sh
 nvm install node
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
