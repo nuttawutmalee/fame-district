@@ -35,7 +35,7 @@ module.exports = {
       repo: 'https://github.com/nuttawutmalee/wink-hotels.git',
       path: '/var/www/gatsby/production',
       // 'pre-setup': 'server.sh',
-      'post-deploy': 'yarn install && npm run serve --env production',
+      'post-deploy': 'yarn install && npm run serve --env production && npm run deploy',
       env: {
         NODE_ENV: 'production',
       },

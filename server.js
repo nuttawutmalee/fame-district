@@ -4,7 +4,7 @@ require('dotenv').config({
 // eslint-disable-next-line
 require('regenerator-runtime/runtime');
 
-const { SERVER_PORT, WEBHOOK_PATH, WEBHOOK_SECRET, NODE_ENV } = process.env;
+const { SERVER_PORT, WEBHOOK_PATH, WEBHOOK_SECRET } = process.env;
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -41,8 +41,7 @@ const validateWebhook = (req, res, next) => {
 // Webhook endpoint
 app.post(WEBHOOK_PATH, validateWebhook, async (req, res) => {
   try {
-    const cmd = NODE_ENV === 'production' ? 'npm run deploy-prod' : 'npm run deploy-dev';
-    const { stdout, stderr } = await exec(cmd);
+    const { stdout, stderr } = await exec('npm run deploy');
 
     if (stdout) {
       // eslint-disable-next-line
