@@ -21,7 +21,7 @@ module.exports = {
       repo: 'https://github.com/nuttawutmalee/wink-hotels.git',
       path: '/var/www/gatsby/staging',
       'pre-setup': 'server.sh',
-      'post-deploy': 'yarn install && npm run serve --env dev',
+      'post-deploy': 'npm install && npm run serve --env dev',
       env: {
         NODE_ENV: 'development',
       },
@@ -35,7 +35,7 @@ module.exports = {
       repo: 'https://github.com/nuttawutmalee/wink-hotels.git',
       path: '/var/www/gatsby/production',
       'pre-setup': 'server.sh',
-      'post-deploy': 'yarn install && npm run serve --env production',
+      'post-deploy': 'npm install && npm run serve --env production',
       env: {
         NODE_ENV: 'production',
       },
