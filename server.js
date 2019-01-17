@@ -1,5 +1,3 @@
-console.log(process.env.NODE_ENV);
-
 require('dotenv').config({
   path: `.env.${process.env.NODE_ENV}`,
 });
@@ -21,17 +19,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-const validateWebhook = (req, res, next) => {
+// Webhook endpoint
+app.post(WEBHOOK_PATH, async (req, res) => {
   const { body = null } = req;
 
-  if (!body) return next('Empty body');
+  if (!body) return res.status(500).json('Empty body');
 
   const { type, secret } = body;
 
-  console.log(process.env.NODE_ENV, WEBHOOK_SECRET, secret, secret !== WEBHOOK_SECRET);
-
   if (secret !== WEBHOOK_SECRET) {
-    return next('Unauthorized');
+    return res.status(500).json('Unauthorized');
   }
 
   if (type !== 'api-update') {
@@ -39,11 +36,6 @@ const validateWebhook = (req, res, next) => {
     return res.status(200).end();
   }
 
-  return next();
-};
-
-// Webhook endpoint
-app.post(WEBHOOK_PATH, validateWebhook, async (req, res) => {
   try {
     const { stdout, stderr } = await exec('npm run deploy');
 
@@ -60,11 +52,9 @@ app.post(WEBHOOK_PATH, validateWebhook, async (req, res) => {
     // eslint-disable-next-line
     console.log('Webhook detected, rebuilding started...');
 
-    // deploy to s3
-
-    res.status(200).end();
+    return res.status(200).end();
   } catch (e) {
-    res.status(500).end();
+    return res.status(500).end();
   }
 });
 

@@ -4,14 +4,11 @@
   "description": "Website built from Prismic, Gatsby, and React.",
   "main": "n/a",
   "scripts": {
-    "precommit": "npm run lint",
     "format": "prettier --trailing-comma es5 --single-quote --write 'src/**/*.js'",
     "lint": "eslint ./src/**/*.js",
     "start": "gatsby develop",
     "build": "gatsby build",
     "serve": "pm2 startOrRestart ecosystem.config.js",
-    "stop": "pm2 stop ecosystem.config.js",
-    "delete": "pm2 delete ecosystem.config.js",
     "deploy": "npm run build && npx s3-deploy './public/**' --cwd './public/' --region ap-southeast-1 --bucket wink --deleteRemoved --gzip --cache 3600"
   },
   "repository": {
