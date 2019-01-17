@@ -10,6 +10,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const { get } = require('lodash');
 
 const app = express();
 
@@ -20,23 +21,33 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Webhook endpoint
+// eslint-disable-next-line
 app.post(WEBHOOK_PATH, async (req, res) => {
-  const { body = null } = req;
+  const secret = get(req, 'body.secret', null);
 
-  if (!body) return res.status(500).json('Empty body');
-
-  const { type, secret } = body;
-
-  if (secret !== WEBHOOK_SECRET) {
-    return res.status(500).json('Unauthorized');
+  if (secret) {
+    if (secret !== WEBHOOK_SECRET) {
+      return res.sendStatus(401);
+    }
+  } else if (secret !== null) {
+    return res.sendStatus(400);
   }
 
-  if (type !== 'api-update') {
-    // ignore everything but api-update
-    return res.status(200).end();
+  const type = get(req, 'body.type', null);
+
+  // ignore everything but api-update
+  if (type) {
+    if (type !== 'api-update') {
+      return res.sendStatus(500);
+    }
+  } else if (type !== null) {
+    return res.sendStatus(400);
   }
 
   try {
+    // eslint-disable-next-line
+    console.log('Webhook detected, rebuilding started...');
+
     const { stdout, stderr } = await exec('npm run deploy');
 
     if (stdout) {
@@ -49,12 +60,9 @@ app.post(WEBHOOK_PATH, async (req, res) => {
       console.log(stderr);
     }
 
-    // eslint-disable-next-line
-    console.log('Webhook detected, rebuilding started...');
-
-    return res.status(200).end();
+    res.sendStatus(200);
   } catch (e) {
-    return res.status(500).end();
+    res.sendStatus(500);
   }
 });
 
