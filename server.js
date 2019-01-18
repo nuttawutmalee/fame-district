@@ -8,7 +8,7 @@ const { SERVER_PORT, WEBHOOK_PATH, WEBHOOK_SECRET } = process.env;
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const { get } = require('lodash');
 
 const app = express();
@@ -50,22 +50,20 @@ app.post(WEBHOOK_PATH, (req, res) => {
   // eslint-disable-next-line
   console.log('Webhook detected, rebuilding started...');
 
-  exec('npm run deploy', (err, stdout, stderr) => {
-    if (stdout) {
-      // eslint-disable-next-line
-      console.log(stdout);
-    }
+  const build = spawn('npm run build', {
+    shell: true,
+  });
 
-    if (stderr) {
-      // eslint-disable-next-line
-      console.log(stderr);
-    }
+  build.on('exit', () => {
+    // eslint-disable-next-line
+    console.log('Build succeeded');
+    res.sendStatus(200);
+  });
 
-    if (err) {
-      res.sendStatus(500);
-    } else {
-      res.sendStatus(200);
-    }
+  build.on('error', (err) => {
+    // eslint-disable-next-line
+    console.log(err);
+    res.sendStatus(500);
   });
 });
 
