@@ -8,8 +8,7 @@ const { SERVER_PORT, WEBHOOK_PATH, WEBHOOK_SECRET } = process.env;
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const { exec } = require('child_process');
 const { get } = require('lodash');
 
 const app = express();
@@ -22,15 +21,17 @@ app.use(bodyParser.json());
 
 // Webhook endpoint
 // eslint-disable-next-line
-app.post(WEBHOOK_PATH, async (req, res) => {
+app.post(WEBHOOK_PATH, (req, res) => {
   const secret = get(req, 'body.secret', null);
 
   if (secret) {
     if (secret !== WEBHOOK_SECRET) {
-      return res.sendStatus(401);
+      res.sendStatus(401);
+      return;
     }
   } else if (secret !== null) {
-    return res.sendStatus(400);
+    res.sendStatus(400);
+    return;
   }
 
   const type = get(req, 'body.type', null);
@@ -38,18 +39,18 @@ app.post(WEBHOOK_PATH, async (req, res) => {
   // ignore everything but api-update
   if (type) {
     if (type !== 'api-update') {
-      return res.sendStatus(500);
+      res.sendStatus(500);
+      return;
     }
   } else if (type !== null) {
-    return res.sendStatus(400);
+    res.sendStatus(400);
+    return;
   }
 
-  try {
-    // eslint-disable-next-line
-    console.log('Webhook detected, rebuilding started...');
+  // eslint-disable-next-line
+  console.log('Webhook detected, rebuilding started...');
 
-    const { stdout, stderr } = await exec('npm run deploy');
-
+  exec('npm run deploy', (err, stdout, stderr) => {
     if (stdout) {
       // eslint-disable-next-line
       console.log(stdout);
@@ -60,10 +61,12 @@ app.post(WEBHOOK_PATH, async (req, res) => {
       console.log(stderr);
     }
 
-    res.sendStatus(200);
-  } catch (e) {
-    res.sendStatus(500);
-  }
+    if (err) {
+      res.sendStatus(500);
+    } else {
+      res.sendStatus(200);
+    }
+  });
 });
 
 // eslint-disable-next-line

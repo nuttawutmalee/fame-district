@@ -14,7 +14,7 @@ module.exports = {
   deploy: {
     production: {
       user: 'ubuntu',
-      host: 'ec2-54-169-57-55.ap-southeast-1.compute.amazonaws.com',
+      host: 'ec2-13-251-102-28.ap-southeast-1.compute.amazonaws.com',
       key: '~/.ssh/ec2.pem',
       ref: 'origin/master',
       ssh_options: 'StrictHostKeyChecking=no',
