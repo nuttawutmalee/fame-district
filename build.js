@@ -5,7 +5,7 @@ process.on('message', body => {
   // eslint-disable-next-line
   console.log('Webhook detected, rebuilding started...');
 
-  const build = spawn('npm run build', { shell: true });
+  const build = spawn('npm run deploy', { shell: true });
 
   build.stdout.on('data', (data) => {
     // eslint-disable-next-line
