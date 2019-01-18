@@ -7,6 +7,7 @@ require('regenerator-runtime/runtime');
 const { SERVER_PORT, WEBHOOK_PATH, WEBHOOK_SECRET } = process.env;
 
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
 const { fork } = require('child_process');
 const { get } = require('lodash');
@@ -52,16 +53,16 @@ app.post(WEBHOOK_PATH, (req, res) => {
   // eslint-disable-next-line
   console.log('Webhook detected, rebuilding started...');
 
-  const build = fork('build.js');
+  const build = fork(path.resolve(__dirname, './build.js'));
 
   if (!build) {
     res.status(500).end();
     return;
   }
 
-  res.status(200);
+  res.status(200).end();
 
-  build.send();
+  build.send(req.body);
 });
 
 // eslint-disable-next-line

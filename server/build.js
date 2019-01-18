@@ -1,18 +1,26 @@
-const { spawnSync } = require('child_process');
+const { spawn } = require('child_process');
 
-process.on('message', () => {
+// eslint-disable-next-line
+process.on('message', body => {
   // eslint-disable-next-line
   console.log('Webhook detected, rebuilding started...');
 
-  const { stdout, stderr } = spawnSync('npm run build', { shell: true });
+  const build = spawn('gatsby build', { shell: true });
 
-  if (stdout) {
+  build.stdout.on('data', (data) => {
     // eslint-disable-next-line
-    console.log(stdout);
-  }
+    console.log(`stdout: ${data}`);
+  });
 
-  if (stderr) {
+  build.stderr.on('data', (data) => {
     // eslint-disable-next-line
-    console.log(stderr);
-  }
+    console.log(`stderr: ${data}`);
+  });
+
+  build.on('close', (code) => {
+    if (code !== 0) {
+      // eslint-disable-next-line
+      console.log(`build process exited with code ${code}`);
+    }
+  });
 });
