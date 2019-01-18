@@ -59,14 +59,14 @@ app.post(WEBHOOK_PATH, (req, res) => {
   build.on('exit', () => {
     // eslint-disable-next-line
     console.log('Build succeeded');
-    res.sendStatus(200);
   });
 
   build.on('error', (err) => {
     // eslint-disable-next-line
     console.log(err);
-    res.sendStatus(500);
   });
+
+  res.sendStatus(200);
 });
 
 // eslint-disable-next-line
