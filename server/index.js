@@ -8,7 +8,7 @@ const { SERVER_PORT, WEBHOOK_PATH, WEBHOOK_SECRET } = process.env;
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const { spawn } = require('child_process');
+const { fork } = require('child_process');
 const { get } = require('lodash');
 
 const app = express();
@@ -28,11 +28,11 @@ app.post(WEBHOOK_PATH, (req, res) => {
 
   if (secret) {
     if (secret !== WEBHOOK_SECRET) {
-      res.sendStatus(401);
+      res.status(401).end();
       return;
     }
   } else if (secret !== null) {
-    res.sendStatus(400);
+    res.status(400).end();
     return;
   }
 
@@ -41,32 +41,27 @@ app.post(WEBHOOK_PATH, (req, res) => {
   // ignore everything but api-update
   if (type) {
     if (type !== 'api-update') {
-      res.sendStatus(200);
+      res.status(200).end();
       return;
     }
   } else if (type !== null) {
-    res.sendStatus(400);
+    res.status(400).end();
     return;
   }
 
   // eslint-disable-next-line
   console.log('Webhook detected, rebuilding started...');
 
-  const build = spawn('npm run build', {
-    shell: true,
-  });
+  const build = fork('build.js');
 
-  build.on('exit', () => {
-    // eslint-disable-next-line
-    console.log('Build succeeded');
-  });
+  if (!build) {
+    res.status(500).end();
+    return;
+  }
 
-  build.on('error', (err) => {
-    // eslint-disable-next-line
-    console.log(err);
-  });
+  res.status(200);
 
-  res.sendStatus(200);
+  build.send();
 });
 
 // eslint-disable-next-line

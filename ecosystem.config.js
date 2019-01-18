@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'gatsby-prismic',
-      script: './server.js',
+      script: './server/index.js',
       env: {
         NODE_ENV: 'development',
       },
