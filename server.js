@@ -22,6 +22,8 @@ app.use(bodyParser.json());
 // Webhook endpoint
 // eslint-disable-next-line
 app.post(WEBHOOK_PATH, (req, res) => {
+  req.setTimeout(10000);
+
   const secret = get(req, 'body.secret', null);
 
   if (secret) {
@@ -39,7 +41,7 @@ app.post(WEBHOOK_PATH, (req, res) => {
   // ignore everything but api-update
   if (type) {
     if (type !== 'api-update') {
-      res.sendStatus(500);
+      res.sendStatus(200);
       return;
     }
   } else if (type !== null) {
