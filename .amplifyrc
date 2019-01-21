@@ -1,0 +1,14 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "winkhotels-20190121144325-authRole",
+      "UnauthRoleArn": "arn:aws:iam::181535730520:role/winkhotels-20190121144325-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::181535730520:role/winkhotels-20190121144325-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "winkhotels-20190121144325-deployment",
+      "UnauthRoleName": "winkhotels-20190121144325-unauthRole",
+      "StackName": "winkhotels-20190121144325",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:181535730520:stack/winkhotels-20190121144325/3c8a0c20-1d50-11e9-9fe5-0a7a5dd66442"
+    }
+  }
+}
