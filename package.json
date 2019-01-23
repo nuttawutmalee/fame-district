@@ -4,13 +4,17 @@
   "description": "Website built from Prismic, Gatsby, and React.",
   "main": "n/a",
   "scripts": {
+    "test": "jest",
     "format": "prettier --trailing-comma es5 --single-quote --write 'src/**/*.js'",
     "lint": "eslint ./src/**/*.js",
+    "create-env": "rimraf .env && ncp .env.example .env",
     "start": "gatsby develop",
     "build": "gatsby build",
     "create-stack": "export $(cat .env | xargs) && ./bin/create.sh",
     "update-stack": "export $(cat .env | xargs) && ./bin/update.sh",
-    "delete-stack": "export $(cat .env | xargs) && ./bin/delete.sh"
+    "delete-stack": "export $(cat .env | xargs) && ./bin/delete.sh",
+    "precommit": "npm run test",
+    "postinstall": "npm run create-env"
   },
   "repository": {
     "type": "git",
@@ -28,9 +32,13 @@
   "bugs": {
     "url": "https://github.com/nuttawutmalee/wink-hotels/issues"
   },
+  "jest": {
+    "verbose": false
+  },
   "homepage": "https://github.com/nuttawutmalee/wink-hotels#readme",
   "dependencies": {
     "aws-amplify": "^1.1.19",
+    "aws-sdk": "^2.392.0",
     "axios": "^0.18.0",
     "babel-plugin-styled-components": "^1.10.0",
     "babel-polyfill": "^6.26.0",
@@ -67,10 +75,12 @@
     "react-loader-spinner": "^2.2.0",
     "react-redux": "^5.1.1",
     "redux": "^4.0.1",
+    "serverless": "^1.36.2",
     "styled-components": "^4.1.1",
     "three": "^0.98.0"
   },
   "devDependencies": {
+    "aws-sdk-mock": "^4.3.0",
     "babel-core": "^6.26.3",
     "cross-env": "^5.2.0",
     "eslint": "^5.9.0",
@@ -79,9 +89,11 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-react": "^7.11.1",
     "jest": "^23.6.0",
+    "ncp": "^2.0.0",
     "npm": "^6.4.1",
     "pre-commit": "^1.2.2",
     "prettier": "^1.15.3",
-    "redux-logger": "^3.0.6"
+    "redux-logger": "^3.0.6",
+    "rimraf": "^2.6.3"
   }
 }
