@@ -1,0 +1,768 @@
+---
+AWSTemplateFormatVerion: "2010-09-09"
+
+Description: |
+  Static website stack including:
+  * S3 bucket for website content
+  * Redirect from "www." to base domain
+  * Access logs written to logs bucket
+  * ACM certificate for SSL
+  * CloudFront distributions for website https access
+  * Route53 hosted zone with DNS entries
+  * CodePipeline (sourced from GitHub)
+  * S3 bucket for CodePipeline artifacts
+
+Parameters:
+  # Domain: example.com
+  DomainName:
+    Description: "The base domain name for the website (no 'www'."
+    Type: String
+    MinLength: 4
+    MaxLength: 253
+    AllowedPattern: "[a-z0-9]+[-.a-z0-9]*(\\.[a-z][a-z]+)+"
+    ConstraintDescription: "Provide a valid domain name using only lowercase letters, numbers, and dash (-)."
+
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues:
+      - production
+      - development
+    Default: development
+    ConstraintDescription: Provide specific production or development environtment type.
+
+  DefaultTTL:
+    Type: Number
+    Description: TTL in seconds.
+    Default: 30
+
+  MinimumTTL:
+    Description: Minimum cache lifetime in seconds for the CloudFront distribution.
+    Default: 5
+    Type: Number
+
+  GitHubOwner:
+    Description: The owner of the repository used for the static site.
+    Type: String
+
+  GitHubRepo:
+    Description: The name of the repository used for the static site.
+    Type: String
+
+  GitHubBranch:
+    Description: "The branch which will auto deploy the static site (default is master)"
+    Type: String
+    Default: master
+
+  GitHubToken:
+    Description: The OAuth token which gives access to your repository.
+    NoEcho: true
+    Type: String
+
+  InstanceImageId:
+    Description: The AMI id for gatsby instance. (default to Ubuntu 16.04 LTS)
+    Type: AWS::EC2::Image::Id
+    Default: ami-daad67b9
+
+  InstanceType:
+    Description: Instance type to launch EC2 instances.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      [
+        t1.micro,
+        t2.nano,
+        t2.micro,
+        t2.small,
+        t2.medium,
+        t2.large,
+        m1.small,
+        m1.medium,
+        m1.large,
+        m1.xlarge,
+        m2.xlarge,
+        m2.2xlarge,
+        m2.4xlarge,
+        m3.medium,
+        m3.large,
+        m3.xlarge,
+        m3.2xlarge,
+        m4.large,
+        m4.xlarge,
+        m4.2xlarge,
+        m4.4xlarge,
+        m4.10xlarge,
+        c1.medium,
+        c1.xlarge,
+        c3.large,
+        c3.xlarge,
+        c3.2xlarge,
+        c3.4xlarge,
+        c3.8xlarge,
+        c4.large,
+        c4.xlarge,
+        c4.2xlarge,
+        c4.4xlarge,
+        c4.8xlarge,
+        g2.2xlarge,
+        g2.8xlarge,
+        r3.large,
+        r3.xlarge,
+        r3.2xlarge,
+        r3.4xlarge,
+        r3.8xlarge,
+        i2.xlarge,
+        i2.2xlarge,
+        i2.4xlarge,
+        i2.8xlarge,
+        d2.xlarge,
+        d2.2xlarge,
+        d2.4xlarge,
+        d2.8xlarge,
+        hi1.4xlarge,
+        hs1.8xlarge,
+        cr1.8xlarge,
+        cc2.8xlarge,
+        cg1.4xlarge,
+      ]
+    ConstraintDescription: must be a valid EC2 instance type.
+
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances.
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances.
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    Default: 0.0.0.0/0
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+
+  PreExistingSiteBucket:
+    Description: Optional name of pre-existing website bucket. Leave empty to have website bucket created and managed by this stack.
+    Type: String
+    Default: ""
+
+  PreExistingRedirectBucket:
+    Description: Optional name of pre-existing redirect bucket. Leave empty to have redirect bucket created and managed by this stack.
+    Type: String
+    Default: ""
+
+  PreExistingCodePipelineBucket:
+    Description: "Optional name of pre-existing CodePipeline artifact bucket. Leave empty to have CodePipeline bucket created and managed by this stack."
+    Type: String
+    Default: ""
+
+  PreExistingHostedZoneDomain:
+    Description: Optional domain name for pre-existing Route 53 hosted zone. Leave empty to have hosted zone created and managed by this stack.
+    Type: String
+    Default: ""
+
+  PreExistingInstanceHostedZoneDomain:
+    Description: Optional domain name for pre-existing Route 53 hosted zone for gatsby build instance. Leave empty to have hosted zone created and managed by this stack.
+    Type: String
+    Default: ""
+
+Conditions:
+  IsProduction: !Equals
+    - !Ref EnvType
+    - production
+  NeedsNewSiteBucket: !Equals
+    - !Ref PreExistingSiteBucket
+    - ""
+  NeedsNewRedirectBucket: !Equals
+    - !Ref PreExistingRedirectBucket
+    - ""
+  NeedsNewCodePipelineBucket: !Equals
+    - !Ref PreExistingCodePipelineBucket
+    - ""
+  NeedsNewHostedZone: !Equals
+    - !Ref PreExistingHostedZoneDomain
+    - ""
+
+Resources:
+  # # Auto-scaling group for build server
+  # AutoScalingGroup:
+  #   Type: AWS::AutoScaling::AutoScalingGroup
+  #   Properties:
+  #     AvailabilityZones: !GetAZs ""
+  #     LaunchConfigurationName: !Ref LaunchConfig
+  #     MaxSize: 1
+  #     MinSize: 1
+
+  # # Launch config for auto-scaling group
+  # LaunchConfig:
+  #   Type: AWS::AutoScaling::LaunchConfiguration
+  #   Properties:
+  #     KeyName: !Ref KeyName
+  #     ImageId: !FindInMap
+  #       - AWSRegionAMIEC2
+  #       - !Ref "AWS::Region"
+  #       - ImageId
+  #     InstanceType: !Ref InstanceType
+  #     SecurityGroups:
+  #       - !Ref InstanceSecurityGroup
+  #     IamInstanceProfile: !Ref InstanceProfile
+  #     Userdata: !Base64 |
+  #       #!/bin/bash -ex
+
+  #       sudo rm -rf /var/www/gatsby/$ENV_NAME
+  #       sudo mkdir -p /var/www/gatsby/$ENV_NAME
+  #       sudo chmod -R 777 /var/www/gatsby/$ENV_NAME
+
+  #       # install node
+  #       curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+  #       source ~/.bashrc
+  #       nvm install node
+
+  #       # install pm2
+  #       npm install -g pm2@latest
+
+  #       # install apt-get modules
+  #       curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+  #       echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+  #       sudo apt-get update
+  #       sudo apt-get install build-essential
+  #       sudo apt-get install -y git
+  #       sudo apt-get install --no-install-recommends -y yarn
+  #       sudo apt-get install -y nginx
+
+  #       # config nginx server
+  #       sudo rm /etc/nginx/sites-enabled/default
+
+  #       # redirect port 80 to 3000
+  #       sudo sh -c "cat > /etc/nginx/sites-available/gatsby" <<\EOF
+  #       server {
+  #         listen 80;
+  #         server_name gatsby;
+  #         location / {
+  #           proxy_set_header  X-Real-IP  $remote_addr;
+  #           proxy_set_header  Host       $http_host;
+  #           proxy_pass        http://127.0.0.1:3000;
+  #         }
+  #       }
+  #       EOF
+
+  #       sudo ln -s /etc/nginx/sites-available/gatsby /etc/nginx/sites-enabled/gatsby
+  #       sudo service nginx restart
+
+  #       # install aws
+  #       sudo apt-get install -y python
+  #       curl -O https://bootstrap.pypa.io/get-pip.py
+  #       python get-pip.py --user
+  #       echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
+  #       source ~/.bashrc
+  #       pip install awscli --update --user
+
+  #       aws configure set aws_access_key_id $AWS_ACCESS_KEY
+  #       aws configure set aws_secret_access_key $AWS_SECRET_KEY
+  #       aws configure set default.region ${AWS::Region}
+
+  #       /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource LaunchConfig --configsets full_install --region ${AWS::Region}
+  #       /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource AutoScalingGroup --region ${AWS::Region}
+  #     Tags:
+  #       - Key: Name
+  #         Value: "My Awesome Instance"
+  #       - Key: INSTANCE_ROLE_ARN
+  #         Value:
+  #           Fn::GetAtt:
+  #             - MyInstanceRole
+  #             - Arn
+  #       - Key: GREETING
+  #         Value: "Hello, world!"
+  #       - Key: TAG1
+  #         Value: "My awesome tag #1"
+
+  # InstanceSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Enable SSH access and HTTP access on the configured port.
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 22
+  #         ToPort: 22
+  #         CidrIp: !Ref SSHLocation
+  #       - IpProtocol: tcp
+  #         FromPort: 80
+  #         ToPort: 80
+  #         CidrIp: 0.0.0.0/0
+
+  GatsbyCodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/nodejs:10.14.1
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: DESTINATION_S3_BUCKET
+            Value: !Ref DomainName
+      Name: !Sub "${AWS::StackName}GatsbyCodeBuild"
+      ServiceRole: !Ref GatsbyCodeBuildRole
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - touch .npmignore
+                - npm install -g gatsby
+            pre_build:
+              commands:
+                - npm install
+            build:
+              commands:
+                - npm run build
+            post_build:
+              commands:
+                - aws s3 sync "public/" "s3://$DESTINATION_S3_BUCKET" --delete --acl "public-read"
+                - aws s3 cp "s3://$DESTINATION_S3_BUCKET" "s3://$DESTINATION_S3_BUCKET" --metadata-directive REPLACE --exclude "*" --include "*.jpg" --include "*.gif" --include "*.png" --recursive --cache-control max-age=3600
+          artifacts:
+            base-directory: public
+            files:
+              - "**/*"
+
+  # CodePipeline: Pass Git contents to AWS Lambda function on Git activity
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${DomainName}-codepipeline"
+      ArtifactStore:
+        Type: S3
+        Location: !If
+          - NeedsNewCodePipelineBucket
+          - !Ref CodePipelineBucket
+          - !Ref PreExistingCodePipelineBucket
+      RestartExecutionOnUpdate: true
+      RoleArn: !Sub "arc:aws:iam::${AWS::AccountId}:role/${CodePipelineRole}"
+      Stages:
+        - Name: Source-from-GitHub
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepo
+                Branch: !Ref GitHubBranch
+                OAuthToken: !Ref GitHubToken
+              OutputArtifacts:
+                - Name: SiteSource
+              RunOrder: 1
+        - Name: Build-and-Deploy
+          Actions:
+            - Name: Gatsby-Build
+              InputArtifacts:
+                - Name: SiteSource
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref GatsbyCodeBuild
+              OutputArtifacts:
+                - Name: StaticFiles
+              RunOrder: 1
+
+  # Bucket for site content: example.com
+  SiteBucket:
+    Condition: NeedsNewSiteBucket
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DomainName
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+    DeletionPolicy: Delete
+
+  # Bucket to redirect to example.com: www.example.com
+  RedirectBucket:
+    Condition: NeedsNewRedirectBucket
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "www.${DomainName}"
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+          Protocol: !If
+            - IsProduction
+            - https
+            - http
+    DeletionPolicy: Delete
+
+  # Bucket for CodePipeline artifact storage: codepipeline.example.com
+  CodePipelineBucket:
+    Condition: NeedsNewCodePipelineBucket
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "codepipeline.${DomainName}"
+      VersioningConfiguration:
+        Status: Enabled
+    DeletionPolicy: Delete
+
+  # Certificate for HTTPS accesss through CloudFront
+  Certificate:
+    Condition: IsProduction
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub "www.${DomainName}"
+
+  # CDN serves S3 content for example.com
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Aliases:
+          - !Ref DomainName
+        DefaultRootObject: index.html
+        Origins:
+          - DomainName: !Join
+              - ""
+              - - !Ref DomainName
+                - .
+                - !FindInMap
+                  - RegionMap
+                  - !Ref "AWS::Region"
+                  - WebsiteEndpoint
+            Id: S3Origin
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          AllowedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          DefaultTTL: !Ref DefaultTTL
+          MinTTL: !Ref MinimumTTL
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: !If
+            - IsProduction
+            - redirect-to-https
+            - allow-all
+        ViewerCertificate: !If
+          - IsProduction
+          - AcmCertificateArn: !Ref Certificate
+            SslSupportMethod: sni-only
+          - !Ref "AWS::NoValue"
+    DeletionPolicy: Delete
+
+  # CDN serves S3 content for www.example.com
+  RedirectCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Aliases:
+          - !If
+            - NeedsNewRedirectBucket
+            - !Ref RedirectBucket
+            - !Ref PreExistingRedirectBucket
+        Origins:
+          - DomainName: !Join
+              - ""
+              - - !If
+                  - NeedsNewRedirectBucket
+                  - !Ref RedirectBucket
+                  - !Ref PreExistingRedirectBucket
+                - .
+                - !FindInMap
+                  - RegionMap
+                  - !Ref "AWS::Region"
+                  - WebsiteEndpoint
+            Id: RedirectS3Origin
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+        DefaultCacheBehavior:
+          TargetOriginId: RedirectS3Origin
+          AllowedMethods:
+            - GET
+            - HEAD
+          DefaultTTL: !Ref DefaultTTL
+          MinTTL: !Ref MinimumTTL
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: allow-all
+        ViewerCertificate: !If
+          - IsProduction
+          - AcmCertificateArn: !Ref Certificate
+            SslSupportMethod: sni-only
+          - !Ref "AWS::NoValue"
+    DeletionPolicy: Delete
+
+  # DNS: example.com, www.example.com
+  Route53HostedZone:
+    Condition: NeedsNewHostedZone
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+      HostedZoneConfig:
+        Comment: !Sub "Created by CloudFormation stack: ${AWS::StackName}"
+    DeletionPolicy: Delete
+
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !If
+        - NeedsNewHostedZone
+        - !Ref Route53HostedZone
+        - !Ref "AWS::NoValue"
+      HostedZoneName: !If
+        - NeedsNewHostedZone
+        - !Ref "AWS::NoValue"
+        - !Sub "${PreExistingHostedZoneDomain}."
+      RecordSets:
+        # example.com
+        - Name: !Sub "${DomainName}."
+          Type: A
+          # Resolve to CloudFront distribution
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2 # CloudFront
+            DNSName: !GetAtt CloudFrontDistribution.DomainName
+        # www.example.com
+        - Name: !Sub "www.${DomainName}."
+          Type: A
+          # Resolve to Redirect CloudFront distribution
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2 # CloudFront
+            DNSName: !GetAtt RedirectCloudFrontDistribution.DomainName
+    DeletionPolicy: Delete
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - InstanceRole
+
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+    DeletionPolicy: Delete
+
+  GatsbyCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws::policy/AdministratorAccess
+    DeletionPolicy: Delete
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: "codepipeline-service"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+    DeletionPolicy: Delete
+
+Mappings:
+  RegionMap:
+    ap-northeast-1:
+      S3HostedZoneID: Z2M4EHUR26P7ZW
+      WebsiteEndpoint: "s3-website-ap-northeast-1.amazonaws.com"
+    ap-northeast-2:
+      S3HostedZoneID: Z3W03O7B5YMIYP
+      WebsiteEndpoint: "s3-website.ap-northeast-2.amazonaws.com"
+    ap-northeast-3:
+      S3HostedZoneID: Z2YQB5RD63NC85
+      WebsiteEndpoint: "s3-website.ap-northeast-3.amazonaws.com"
+    ap-south-1:
+      S3HostedZoneID: Z11RGJOFQNVJUP
+      WebsiteEndpoint: "s3-website.ap-south-1.amazonaws.com"
+    ap-southeast-1:
+      S3HostedZoneID: Z3O0J2DXBE1FTB
+      WebsiteEndpoint: "s3-website-ap-southeast-1.amazonaws.com"
+    ap-southeast-2:
+      S3HostedZoneID: Z1WCIGYICN2BYD
+      WebsiteEndpoint: "s3-website-ap-southeast-2.amazonaws.com"
+    cn-northwest-1:
+      S3HostedZoneID: NOT_SUPPORTED
+      WebsiteEndpoint: "s3-website.cn-northwest-1.amazonaws.com.cn"
+    ca-central-1:
+      S3HostedZoneID: Z1QDHH18159H29
+      WebsiteEndpoint: "s3-website.ca-central-1.amazonaws.com"
+    eu-central-1:
+      S3HostedZoneID: Z21DNDUVLTQW6Q
+      WebsiteEndpoint: "s3-website.eu-central-1.amazonaws.com"
+    eu-north-1:
+      S3HostedZoneID: Z3BAZG2TWCNX0D
+      WebsiteEndpoint: "s3-website.eu-north-1.amazonaws.com"
+    eu-west-1:
+      S3HostedZoneID: Z1BKCTXD74EZPE
+      WebsiteEndpoint: "s3-website-eu-west-1.amazonaws.com"
+    eu-west-2:
+      S3HostedZoneID: Z3GKZC51ZF0DB4
+      WebsiteEndpoint: "s3-website-eu-west-2.amazonaws.com"
+    eu-west-3:
+      S3HostedZoneID: Z3R1K369G5AVDG
+      WebsiteEndpoint: "s3-website-eu-west-3.amazonaws.com"
+    sa-east-1:
+      S3HostedZoneID: Z7KQH4QJS55SO
+      WebsiteEndpoint: "s3-website-sa-east-1.amazonaws.com"
+    us-east-1:
+      S3HostedZoneID: Z3AQBSTGFYJSTF
+      WebsiteEndpoint: "s3-website-us-east-1.amazonaws.com"
+    us-east-2:
+      S3HostedZoneID: Z2O1EMRO9K5GLX
+      WebsiteEndpoint: "s3-website.us-east-2.amazonaws.com"
+    us-west-1:
+      S3HostedZoneID: Z2F56UZL2M1ACD
+      WebsiteEndpoint: "s3-website-us-west-1.amazonaws.com"
+    us-west-2:
+      S3HostedZoneID: Z3BJ6K6RIION7M
+      WebsiteEndpoint: "s3-website-us-west-2.amazonaws.com"
+  # Ubunto 16.04 LTS (HVM:EBS)
+  AWSRegionAMIEC2:
+    ap-northeast-1:
+      ImageId: ami-bb5440d5
+    ap-northeast-2:
+      ImageId: ami-30854e5e
+    ap-northeast-3:
+      ImageId: ami-00dca6aa6f16b4a64
+    ap-south-1:
+      ImageId: ami-825e34ed
+    ap-southeast-1:
+      ImageId: ami-daad67b9
+    ap-southeast-2:
+      ImageId: ami-0e8bab6d
+    cn-northwest-1:
+      ImageId: NOT_SUPPORTED
+    eu-central-1:
+      ImageId: ami-c1fa1cae
+    eu-north-1:
+      ImageId: ami-017ff17f
+    eu-west-1:
+      ImageId: ami-bbc542c8
+    eu-west-2:
+      ImageId: ami-4bc7cd2f
+    eu-west-3:
+      ImageId: ami-0b2985229e9f6bbba
+    us-east-1:
+      ImageId: ami-70dad51a
+    us-east-2:
+      ImageId: ami-7ea88d1b
+    us-west-1:
+      ImageId: ami-693d4009
+    us-west-2:
+      ImageId: ami-70e90210
+
+Outputs:
+  EnvirontmentType:
+    Value: !Ref EnvType
+  DomainName:
+    Description: Domain name
+    Value: !Ref DomainName
+  RedirectDomainName:
+    Description: Redirect hostname
+    Value: !If
+      - NeedsNewRedirectBucket
+      - !Ref RedirectBucket
+      - !Ref PreExistingRedirectBucket
+  SiteBucket:
+    Value: !If
+      - NeedsNewSiteBucket
+      - !Ref SiteBucket
+      - !Ref PreExistingSiteBucket
+  RedirectBucket:
+    Value: !If
+      - NeedsNewRedirectBucket
+      - !Ref RedirectBucket
+      - !Ref PreExistingSiteBucket
+  HostedZoneId:
+    Description: Route 53 Hosted Zone id
+    Value: !If
+      - NeedsNewHostedZone
+      - !Ref Route53HostedZone
+      - "N/A"
+  CloudFrontDomain:
+    Description: CloudFront distribution domain name
+    Value: !Ref CloudFrontDistribution
+  RedirectCloudFrontDomain:
+    Description: Redirect CloudFront distribution domain name
+    Value: !Ref RedirectCloudFrontDistribution
+  CodePipelineArn:
+    Description: CodePipeline ARN
+    Value: !Ref CodePipeline
+  GitRepositoryName:
+    Description: Git repository name
+    Value: !Ref GitHubRepo
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Website and Git repository
+        Parameters:
+          - DomainName
+          - GitHubOwner
+          - GitHubRepo
+          - GitHubBranch
+          - GitHubToken
+      - Label:
+          default: CloudFront CDN
+        Parameters:
+          - MinimumTTL
+          - DefaultTTL
+      - Label:
+          default: "Pre-existing Resources To Use (Leave empty for stack to create and manage"
+        Parameters:
+          - PreExistingSiteBucket
+          - PreExistingRedirectBucket
+          - PreExistingHostedZoneDomain
+          - PreExistingCodePipelineBucket

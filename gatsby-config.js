@@ -4,13 +4,11 @@
  * See: https://www.gatsbyjs.org/docs/gatsby-config
  */
 
-require('dotenv').config({
-  path: `.env.${process.env.NODE_ENV}`,
-});
+require('dotenv').config();
 // eslint-disable-next-line
 require('regenerator-runtime/runtime');
 
-const { SITE_TITLE, SITE_URL, PRISMIC_REPOSITORY_NAME } = process.env;
+const { SITE_TITLE, SITE_URL, PRISMIC_REPO } = process.env;
 
 module.exports = {
   siteMetadata: {
@@ -23,7 +21,7 @@ module.exports = {
     {
       resolve: 'gatsby-source-prismic',
       options: {
-        repositoryName: PRISMIC_REPOSITORY_NAME,
+        repositoryName: PRISMIC_REPO,
       },
     },
     {
