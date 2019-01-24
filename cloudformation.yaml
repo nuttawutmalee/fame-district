@@ -326,6 +326,10 @@ Resources:
         EnvironmentVariables:
           - Name: DESTINATION_S3_BUCKET
             Value: !Ref DomainName
+          - Name: DISTRIBUTION_ID
+            Value: !Ref CloudFrontDistribution
+          - Name: REDIRECT_DISTRIBUTION_ID
+            Value: !Ref RedirectCloudFrontDistribution
           - Name: SITE_TITLE
             Value: !Ref SiteTitle
           - Name: SITE_URL
@@ -343,22 +347,21 @@ Resources:
           phases:
             install:
               commands:
-                # Install yarn natively https://yarnpkg.com/en/docs/install#linux-tab
-                - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-                - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-                - apt-get update
-                - apt-get install -y yarn
                 - npm install -g gatsby
             pre_build:
               commands:
-                - yarn install
+                - npm install
             build:
               commands:
-                - yarn run build
+                - npm run build
             post_build:
               commands:
                 - aws s3 sync "public/" "s3://$DESTINATION_S3_BUCKET" --delete --acl "public-read"
                 - aws s3 cp "s3://$DESTINATION_S3_BUCKET" "s3://$DESTINATION_S3_BUCKET" --metadata-directive REPLACE --exclude "*" --include "*.jpg" --include "*.gif" --include "*.png" --recursive --cache-control max-age=3600
+                # Main distribution
+                - aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths '/*'
+                # Redirect distribution
+                - aws cloudfront create-invalidation --distribution-id $REDIRECT_DISTRIBUTION_ID --paths '/*'
           artifacts:
             base-directory: public
             files:
