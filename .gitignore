@@ -9,3 +9,4 @@ yarn-error.log
 .vscode/
 plugins/
 .env
+.serverless/

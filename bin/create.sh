@@ -5,12 +5,13 @@ aws cloudformation create-stack \
   --template-body=file://cloudformation.yml \
   --capabilities CAPABILITY_IAM \
   --parameters \
+    ParameterKey=EnvType,ParameterValue=$ENV_TYPE \
     ParameterKey=DomainName,ParameterValue=$DOMAIN_NAME \
     ParameterKey=GitHubOwner,ParameterValue=$GITHUB_OWNER \
     ParameterKey=GitHubRepo,ParameterValue=$GITHUB_REPO \
     ParameterKey=GitHubBranch,ParameterValue=$GITHUB_BRANCH \
     ParameterKey=GitHubToken,ParameterValue=$GITHUB_TOKEN
 
-echo "Creating the $STACK_NAME stack..."
+echo "Creating the $STACK_NAME stack in $ENV_TYPE environment..."
 
 aws cloudformation wait stack-create-complete --stack-name $STACK_NAME

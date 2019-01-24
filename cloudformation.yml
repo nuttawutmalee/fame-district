@@ -59,88 +59,6 @@ Parameters:
     NoEcho: true
     Type: String
 
-  InstanceImageId:
-    Description: The AMI id for gatsby instance. (default to Ubuntu 16.04 LTS)
-    Type: AWS::EC2::Image::Id
-    Default: ami-daad67b9
-
-  InstanceType:
-    Description: Instance type to launch EC2 instances.
-    Type: String
-    Default: t2.micro
-    AllowedValues:
-      [
-        t1.micro,
-        t2.nano,
-        t2.micro,
-        t2.small,
-        t2.medium,
-        t2.large,
-        m1.small,
-        m1.medium,
-        m1.large,
-        m1.xlarge,
-        m2.xlarge,
-        m2.2xlarge,
-        m2.4xlarge,
-        m3.medium,
-        m3.large,
-        m3.xlarge,
-        m3.2xlarge,
-        m4.large,
-        m4.xlarge,
-        m4.2xlarge,
-        m4.4xlarge,
-        m4.10xlarge,
-        c1.medium,
-        c1.xlarge,
-        c3.large,
-        c3.xlarge,
-        c3.2xlarge,
-        c3.4xlarge,
-        c3.8xlarge,
-        c4.large,
-        c4.xlarge,
-        c4.2xlarge,
-        c4.4xlarge,
-        c4.8xlarge,
-        g2.2xlarge,
-        g2.8xlarge,
-        r3.large,
-        r3.xlarge,
-        r3.2xlarge,
-        r3.4xlarge,
-        r3.8xlarge,
-        i2.xlarge,
-        i2.2xlarge,
-        i2.4xlarge,
-        i2.8xlarge,
-        d2.xlarge,
-        d2.2xlarge,
-        d2.4xlarge,
-        d2.8xlarge,
-        hi1.4xlarge,
-        hs1.8xlarge,
-        cr1.8xlarge,
-        cc2.8xlarge,
-        cg1.4xlarge,
-      ]
-    ConstraintDescription: must be a valid EC2 instance type.
-
-  KeyName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances.
-    Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
-
-  SSHLocation:
-    Description: The IP address range that can be used to SSH to the EC2 instances.
-    Type: String
-    MinLength: 9
-    MaxLength: 18
-    Default: 0.0.0.0/0
-    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
-    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
-
   PreExistingSiteBucket:
     Description: Optional name of pre-existing website bucket. Leave empty to have website bucket created and managed by this stack.
     Type: String
@@ -158,11 +76,6 @@ Parameters:
 
   PreExistingHostedZoneDomain:
     Description: Optional domain name for pre-existing Route 53 hosted zone. Leave empty to have hosted zone created and managed by this stack.
-    Type: String
-    Default: ""
-
-  PreExistingInstanceHostedZoneDomain:
-    Description: Optional domain name for pre-existing Route 53 hosted zone for gatsby build instance. Leave empty to have hosted zone created and managed by this stack.
     Type: String
     Default: ""
 
@@ -184,112 +97,7 @@ Conditions:
     - ""
 
 Resources:
-  # # Auto-scaling group for build server
-  # AutoScalingGroup:
-  #   Type: AWS::AutoScaling::AutoScalingGroup
-  #   Properties:
-  #     AvailabilityZones: !GetAZs ""
-  #     LaunchConfigurationName: !Ref LaunchConfig
-  #     MaxSize: 1
-  #     MinSize: 1
-
-  # # Launch config for auto-scaling group
-  # LaunchConfig:
-  #   Type: AWS::AutoScaling::LaunchConfiguration
-  #   Properties:
-  #     KeyName: !Ref KeyName
-  #     ImageId: !FindInMap
-  #       - AWSRegionAMIEC2
-  #       - !Ref "AWS::Region"
-  #       - ImageId
-  #     InstanceType: !Ref InstanceType
-  #     SecurityGroups:
-  #       - !Ref InstanceSecurityGroup
-  #     IamInstanceProfile: !Ref InstanceProfile
-  #     Userdata: !Base64 |
-  #       #!/bin/bash -ex
-
-  #       sudo rm -rf /var/www/gatsby/$ENV_NAME
-  #       sudo mkdir -p /var/www/gatsby/$ENV_NAME
-  #       sudo chmod -R 777 /var/www/gatsby/$ENV_NAME
-
-  #       # install node
-  #       curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-  #       source ~/.bashrc
-  #       nvm install node
-
-  #       # install pm2
-  #       npm install -g pm2@latest
-
-  #       # install apt-get modules
-  #       curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-  #       echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-  #       sudo apt-get update
-  #       sudo apt-get install build-essential
-  #       sudo apt-get install -y git
-  #       sudo apt-get install --no-install-recommends -y yarn
-  #       sudo apt-get install -y nginx
-
-  #       # config nginx server
-  #       sudo rm /etc/nginx/sites-enabled/default
-
-  #       # redirect port 80 to 3000
-  #       sudo sh -c "cat > /etc/nginx/sites-available/gatsby" <<\EOF
-  #       server {
-  #         listen 80;
-  #         server_name gatsby;
-  #         location / {
-  #           proxy_set_header  X-Real-IP  $remote_addr;
-  #           proxy_set_header  Host       $http_host;
-  #           proxy_pass        http://127.0.0.1:3000;
-  #         }
-  #       }
-  #       EOF
-
-  #       sudo ln -s /etc/nginx/sites-available/gatsby /etc/nginx/sites-enabled/gatsby
-  #       sudo service nginx restart
-
-  #       # install aws
-  #       sudo apt-get install -y python
-  #       curl -O https://bootstrap.pypa.io/get-pip.py
-  #       python get-pip.py --user
-  #       echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
-  #       source ~/.bashrc
-  #       pip install awscli --update --user
-
-  #       aws configure set aws_access_key_id $AWS_ACCESS_KEY
-  #       aws configure set aws_secret_access_key $AWS_SECRET_KEY
-  #       aws configure set default.region ${AWS::Region}
-
-  #       /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource LaunchConfig --configsets full_install --region ${AWS::Region}
-  #       /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource AutoScalingGroup --region ${AWS::Region}
-  #     Tags:
-  #       - Key: Name
-  #         Value: "My Awesome Instance"
-  #       - Key: INSTANCE_ROLE_ARN
-  #         Value:
-  #           Fn::GetAtt:
-  #             - MyInstanceRole
-  #             - Arn
-  #       - Key: GREETING
-  #         Value: "Hello, world!"
-  #       - Key: TAG1
-  #         Value: "My awesome tag #1"
-
-  # InstanceSecurityGroup:
-  #   Type: AWS::EC2::SecurityGroup
-  #   Properties:
-  #     GroupDescription: Enable SSH access and HTTP access on the configured port.
-  #     SecurityGroupIngress:
-  #       - IpProtocol: tcp
-  #         FromPort: 22
-  #         ToPort: 22
-  #         CidrIp: !Ref SSHLocation
-  #       - IpProtocol: tcp
-  #         FromPort: 80
-  #         ToPort: 80
-  #         CidrIp: 0.0.0.0/0
-
+  # CodeBuild: gatsby static artifacts
   GatsbyCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -327,6 +135,7 @@ Resources:
             base-directory: public
             files:
               - "**/*"
+    DeletionPolicy: Delete
 
   # CodePipeline: Pass Git contents to AWS Lambda function on Git activity
   CodePipeline:
@@ -373,6 +182,7 @@ Resources:
               OutputArtifacts:
                 - Name: StaticFiles
               RunOrder: 1
+    DeletionPolicy: Delete
 
   # Bucket for site content: example.com
   SiteBucket:
@@ -552,27 +362,6 @@ Resources:
             DNSName: !GetAtt RedirectCloudFrontDistribution.DomainName
     DeletionPolicy: Delete
 
-  InstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles:
-        - InstanceRole
-
-  InstanceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - sts:AssumeRole
-    DeletionPolicy: Delete
-
   GatsbyCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -667,40 +456,6 @@ Mappings:
     us-west-2:
       S3HostedZoneID: Z3BJ6K6RIION7M
       WebsiteEndpoint: "s3-website-us-west-2.amazonaws.com"
-  # Ubunto 16.04 LTS (HVM:EBS)
-  AWSRegionAMIEC2:
-    ap-northeast-1:
-      ImageId: ami-bb5440d5
-    ap-northeast-2:
-      ImageId: ami-30854e5e
-    ap-northeast-3:
-      ImageId: ami-00dca6aa6f16b4a64
-    ap-south-1:
-      ImageId: ami-825e34ed
-    ap-southeast-1:
-      ImageId: ami-daad67b9
-    ap-southeast-2:
-      ImageId: ami-0e8bab6d
-    cn-northwest-1:
-      ImageId: NOT_SUPPORTED
-    eu-central-1:
-      ImageId: ami-c1fa1cae
-    eu-north-1:
-      ImageId: ami-017ff17f
-    eu-west-1:
-      ImageId: ami-bbc542c8
-    eu-west-2:
-      ImageId: ami-4bc7cd2f
-    eu-west-3:
-      ImageId: ami-0b2985229e9f6bbba
-    us-east-1:
-      ImageId: ami-70dad51a
-    us-east-2:
-      ImageId: ami-7ea88d1b
-    us-west-1:
-      ImageId: ami-693d4009
-    us-west-2:
-      ImageId: ami-70e90210
 
 Outputs:
   EnvirontmentType:

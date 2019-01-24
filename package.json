@@ -13,8 +13,7 @@
     "create-stack": "export $(cat .env | xargs) && ./bin/create.sh",
     "update-stack": "export $(cat .env | xargs) && ./bin/update.sh",
     "delete-stack": "export $(cat .env | xargs) && ./bin/delete.sh",
-    "precommit": "npm run test",
-    "postinstall": "npm run create-env"
+    "precommit": "npm run test"
   },
   "repository": {
     "type": "git",
@@ -37,7 +36,6 @@
   },
   "homepage": "https://github.com/nuttawutmalee/wink-hotels#readme",
   "dependencies": {
-    "aws-amplify": "^1.1.19",
     "aws-sdk": "^2.392.0",
     "axios": "^0.18.0",
     "babel-plugin-styled-components": "^1.10.0",
@@ -94,6 +92,8 @@
     "pre-commit": "^1.2.2",
     "prettier": "^1.15.3",
     "redux-logger": "^3.0.6",
-    "rimraf": "^2.6.3"
+    "rimraf": "^2.6.3",
+    "serverless-dotenv-plugin": "^2.0.1",
+    "serverless-plugin-optimize": "^4.0.2-rc.1"
   }
 }
