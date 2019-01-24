@@ -1,5 +1,5 @@
 ---
-AWSTemplateFormatVerion: "2010-09-09"
+AWSTemplateFormatVersion: "2010-09-09"
 
 Description: |
   Static website stack including:
@@ -15,10 +15,10 @@ Description: |
 Parameters:
   # Domain: example.com
   DomainName:
-    Description: "The base domain name for the website (no 'www'."
+    Description: "The base domain name for the website (no 'www'.)"
     Type: String
-    MinLength: 4
-    MaxLength: 253
+    MinLength: "4"
+    MaxLength: "253"
     AllowedPattern: "[a-z0-9]+[-.a-z0-9]*(\\.[a-z][a-z]+)+"
     ConstraintDescription: "Provide a valid domain name using only lowercase letters, numbers, and dash (-)."
 
@@ -97,93 +97,6 @@ Conditions:
     - ""
 
 Resources:
-  # CodeBuild: gatsby static artifacts
-  GatsbyCodeBuild:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Artifacts:
-        Type: CODEPIPELINE
-      Environment:
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/nodejs:10.14.1
-        Type: LINUX_CONTAINER
-        EnvironmentVariables:
-          - Name: DESTINATION_S3_BUCKET
-            Value: !Ref DomainName
-      Name: !Sub "${AWS::StackName}GatsbyCodeBuild"
-      ServiceRole: !Ref GatsbyCodeBuildRole
-      Source:
-        Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              commands:
-                - touch .npmignore
-                - npm install -g gatsby
-            pre_build:
-              commands:
-                - npm install
-            build:
-              commands:
-                - npm run build
-            post_build:
-              commands:
-                - aws s3 sync "public/" "s3://$DESTINATION_S3_BUCKET" --delete --acl "public-read"
-                - aws s3 cp "s3://$DESTINATION_S3_BUCKET" "s3://$DESTINATION_S3_BUCKET" --metadata-directive REPLACE --exclude "*" --include "*.jpg" --include "*.gif" --include "*.png" --recursive --cache-control max-age=3600
-          artifacts:
-            base-directory: public
-            files:
-              - "**/*"
-    DeletionPolicy: Delete
-
-  # CodePipeline: Pass Git contents to AWS Lambda function on Git activity
-  CodePipeline:
-    Type: AWS::CodePipeline::Pipeline
-    Properties:
-      Name: !Sub "${DomainName}-codepipeline"
-      ArtifactStore:
-        Type: S3
-        Location: !If
-          - NeedsNewCodePipelineBucket
-          - !Ref CodePipelineBucket
-          - !Ref PreExistingCodePipelineBucket
-      RestartExecutionOnUpdate: true
-      RoleArn: !Sub "arc:aws:iam::${AWS::AccountId}:role/${CodePipelineRole}"
-      Stages:
-        - Name: Source-from-GitHub
-          Actions:
-            - Name: SourceAction
-              ActionTypeId:
-                Category: Source
-                Owner: ThirdParty
-                Provider: GitHub
-                Version: 1
-              Configuration:
-                Owner: !Ref GitHubOwner
-                Repo: !Ref GitHubRepo
-                Branch: !Ref GitHubBranch
-                OAuthToken: !Ref GitHubToken
-              OutputArtifacts:
-                - Name: SiteSource
-              RunOrder: 1
-        - Name: Build-and-Deploy
-          Actions:
-            - Name: Gatsby-Build
-              InputArtifacts:
-                - Name: SiteSource
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref GatsbyCodeBuild
-              OutputArtifacts:
-                - Name: StaticFiles
-              RunOrder: 1
-    DeletionPolicy: Delete
-
   # Bucket for site content: example.com
   SiteBucket:
     Condition: NeedsNewSiteBucket
@@ -370,10 +283,58 @@ Resources:
         Statement:
           Effect: Allow
           Principal:
-            Service: codebuild.amazonaws.com
-          Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws::policy/AdministratorAccess
+            Service:
+              - codebuild.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Policies:
+        - PolicyName: "codebuild-service"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+    DeletionPolicy: Delete
+
+  # CodeBuild: gatsby static artifacts
+  GatsbyCodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/nodejs:10.14.1
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: DESTINATION_S3_BUCKET
+            Value: !Ref DomainName
+      Name: !Sub "${AWS::StackName}GatsbyCodeBuild"
+      ServiceRole: !Ref GatsbyCodeBuildRole
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - touch .npmignore
+                - npm install -g gatsby
+            pre_build:
+              commands:
+                - npm install
+            build:
+              commands:
+                - npm run build
+            post_build:
+              commands:
+                - aws s3 sync "public/" "s3://$DESTINATION_S3_BUCKET" --delete --acl "public-read"
+                - aws s3 cp "s3://$DESTINATION_S3_BUCKET" "s3://$DESTINATION_S3_BUCKET" --metadata-directive REPLACE --exclude "*" --include "*.jpg" --include "*.gif" --include "*.png" --recursive --cache-control max-age=3600
+          artifacts:
+            base-directory: public
+            files:
+              - "**/*"
     DeletionPolicy: Delete
 
   CodePipelineRole:
@@ -398,6 +359,53 @@ Resources:
               - Effect: Allow
                 Action: "*"
                 Resource: "*"
+    DeletionPolicy: Delete
+
+  # CodePipeline: Pass Git contents to AWS Lambda function on Git activity
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${DomainName}-codepipeline"
+      ArtifactStore:
+        Type: S3
+        Location: !If
+          - NeedsNewCodePipelineBucket
+          - !Ref CodePipelineBucket
+          - !Ref PreExistingCodePipelineBucket
+      RestartExecutionOnUpdate: true
+      RoleArn: !Sub "arc:aws:iam::${AWS::AccountId}:role/${CodePipelineRole}"
+      Stages:
+        - Name: Source-from-GitHub
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepo
+                Branch: !Ref GitHubBranch
+                OAuthToken: !Ref GitHubToken
+              OutputArtifacts:
+                - Name: SiteSource
+              RunOrder: 1
+        - Name: Build-and-Deploy
+          Actions:
+            - Name: Gatsby-Build
+              InputArtifacts:
+                - Name: SiteSource
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref GatsbyCodeBuild
+              OutputArtifacts:
+                - Name: StaticFiles
+              RunOrder: 1
     DeletionPolicy: Delete
 
 Mappings:
