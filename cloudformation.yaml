@@ -343,14 +343,18 @@ Resources:
           phases:
             install:
               commands:
-                - touch .npmignore
-                - npm install -g gatsby
+                # Install yarn natively https://yarnpkg.com/en/docs/install#linux-tab
+                - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+                - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+                - apt-get update
+                - apt-get install -y yarn
+                - yarn global add gatsby --prefix /usr/local
             pre_build:
               commands:
-                - npm install
+                - yarn install
             build:
               commands:
-                - npm run build
+                - yarn run build
             post_build:
               commands:
                 - aws s3 sync "public/" "s3://$DESTINATION_S3_BUCKET" --delete --acl "public-read"
