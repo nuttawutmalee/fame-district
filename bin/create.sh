@@ -2,7 +2,7 @@
 
 aws cloudformation create-stack \
   --stack-name=$STACK_NAME \
-  --template-body=file://cloudformation.yml \
+  --template-body=file://cloudformation.yaml \
   --capabilities CAPABILITY_IAM \
   --profile $AWS_PROFILE \
   --region $AWS_REGION \
@@ -12,7 +12,11 @@ aws cloudformation create-stack \
     ParameterKey=GitHubOwner,ParameterValue=$GITHUB_OWNER \
     ParameterKey=GitHubRepo,ParameterValue=$GITHUB_REPO \
     ParameterKey=GitHubBranch,ParameterValue=$GITHUB_BRANCH \
-    ParameterKey=GitHubToken,ParameterValue=$GITHUB_TOKEN
+    ParameterKey=GitHubToken,ParameterValue=$GITHUB_TOKEN \
+    ParameterKey=SiteTitle,ParameterValue=$SITE_TITLE \
+    ParameterKey=SiteUrl,ParameterValue=$SITE_URL \
+    ParameterKey=PrismicRepo,ParameterValue=$PRISMIC_REPO \
+    ParameterKey=PrismicToken,ParameterValue=$PRISMIC_TOKEN
 
 echo "Creating the $STACK_NAME stack in $ENV_TYPE environment..."
 

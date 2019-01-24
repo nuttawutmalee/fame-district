@@ -8,7 +8,7 @@ require('dotenv').config();
 // eslint-disable-next-line
 require('regenerator-runtime/runtime');
 
-const { SITE_TITLE, SITE_URL, PRISMIC_REPO } = process.env;
+const { SITE_TITLE, SITE_URL, PRISMIC_REPO, PRISMIC_TOKEN } = process.env;
 
 module.exports = {
   siteMetadata: {
@@ -22,6 +22,7 @@ module.exports = {
       resolve: 'gatsby-source-prismic',
       options: {
         repositoryName: PRISMIC_REPO,
+        accessToken: PRISMIC_TOKEN,
       },
     },
     {

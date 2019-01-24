@@ -34,12 +34,27 @@ Parameters:
   DefaultTTL:
     Type: Number
     Description: TTL in seconds.
-    Default: 30
+    Default: "30"
 
   MinimumTTL:
     Description: Minimum cache lifetime in seconds for the CloudFront distribution.
-    Default: 5
+    Default: "5"
     Type: Number
+
+  SiteTitle:
+    Type: String
+
+  SiteUrl:
+    Type: String
+
+  PrismicRepo:
+    Description: The name of your prismic repository.
+    Type: String
+
+  PrismicToken:
+    Description: The permanent access token to your prismic repository.
+    NoEcho: true
+    Type: String
 
   GitHubOwner:
     Description: The owner of the repository used for the static site.
@@ -300,6 +315,7 @@ Resources:
   # CodeBuild: gatsby static artifacts
   GatsbyCodeBuild:
     Type: AWS::CodeBuild::Project
+    DependsOn: SiteBucket
     Properties:
       Artifacts:
         Type: CODEPIPELINE
@@ -310,6 +326,14 @@ Resources:
         EnvironmentVariables:
           - Name: DESTINATION_S3_BUCKET
             Value: !Ref DomainName
+          - Name: SITE_TITLE
+            Value: !Ref SiteTitle
+          - Name: SITE_URL
+            Value: !Ref SiteUrl
+          - Name: PRISMIC_REPO
+            Value: !Ref PrismicRepo
+          - Name: PRISMIC_TOKEN
+            Value: !Ref PrismicToken
       Name: !Sub "${AWS::StackName}GatsbyCodeBuild"
       ServiceRole: !Ref GatsbyCodeBuildRole
       Source:
@@ -373,7 +397,7 @@ Resources:
           - !Ref CodePipelineBucket
           - !Ref PreExistingCodePipelineBucket
       RestartExecutionOnUpdate: true
-      RoleArn: !Sub "arc:aws:iam::${AWS::AccountId}:role/${CodePipelineRole}"
+      RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/${CodePipelineRole}"
       Stages:
         - Name: Source-from-GitHub
           Actions:
