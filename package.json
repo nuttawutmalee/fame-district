@@ -32,7 +32,11 @@
     "url": "https://github.com/nuttawutmalee/wink-hotels/issues"
   },
   "jest": {
-    "verbose": false
+    "verbose": false,
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.cache/"
+    ]
   },
   "homepage": "https://github.com/nuttawutmalee/wink-hotels#readme",
   "dependencies": {
