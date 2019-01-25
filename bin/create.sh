@@ -17,8 +17,7 @@ aws cloudformation create-stack \
     ParameterKey=SiteTitle,ParameterValue=$SITE_TITLE \
     ParameterKey=SiteUrl,ParameterValue=$SITE_URL \
     ParameterKey=PrismicRepo,ParameterValue=$PRISMIC_REPO \
-    ParameterKey=PrismicToken,ParameterValue=$PRISMIC_TOKEN \
-    ParameterKey=PrismicWebhookSecret,ParameterValue=$PRISMIC_WEBHOOK_SECRET
+    ParameterKey=PrismicToken,ParameterValue=$PRISMIC_TOKEN
 
 echo "Creating the $STACK_NAME stack in $ENV_TYPE environment..."
 
