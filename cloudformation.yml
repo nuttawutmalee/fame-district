@@ -31,6 +31,9 @@ Parameters:
     Default: development
     ConstraintDescription: Provide specific production or development environtment type.
 
+  CodePipelineName:
+    Type: String
+
   DefaultTTL:
     Type: Number
     Description: TTL in seconds.
@@ -136,6 +139,7 @@ Resources:
   SiteBucketPolicy:
     Type: AWS::S3::BucketPolicy
     DependsOn: SiteBucket
+    DeletionPolicy: Delete
     Properties:
       Bucket: !Ref SiteBucket
       PolicyDocument:
@@ -176,7 +180,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  # Bucket for codebuild caching dependencies
+  # Bucket for codebuild caching dependencies: codebuildcache.example.com
   CodeBuildCacheBucket:
     Condition: NeedsNewCodeBuildCacheBucket
     Type: AWS::S3::Bucket
@@ -436,7 +440,7 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     DeletionPolicy: Delete
     Properties:
-      Name: !Sub "${DomainName}-codepipeline"
+      Name: !Ref CodePipelineName
       ArtifactStore:
         Type: S3
         Location: !If
@@ -575,6 +579,9 @@ Outputs:
   GitRepositoryName:
     Description: Git repository name
     Value: !Ref GitHubRepo
+  PrismicRepositoryName:
+    Description: Prismic repository name
+    Value: !Ref PrismicRepo
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -587,6 +594,11 @@ Metadata:
           - GitHubRepo
           - GitHubBranch
           - GitHubToken
+      - Label:
+          default: Prismic
+        Parameters:
+          - PrismicRepo
+          - PrismicToken
       - Label:
           default: CloudFront CDN
         Parameters:

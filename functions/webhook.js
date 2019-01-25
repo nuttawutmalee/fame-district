@@ -1,4 +1,4 @@
-const aws = require('aws-sdk');
+const AWS = require('aws-sdk');
 
 function getBody(event) {
   return new Promise((resolve, reject) => {
@@ -11,16 +11,19 @@ function getBody(event) {
 }
 
 function sendNotification(msg) {
-  const sns = new aws.SNS();
+  const sns = new AWS.SNS();
   const params = {
     Message: JSON.stringify(msg),
     TopicArn: null,
   };
 
   return sns
-    .createTopic({ Name: 'PRISMIC_LAMBDA_WEBHOOK' })
+    .createTopic({ Name: process.env.TOPIC_NAME })
     .promise()
     .then((resp) => {
+      // eslint-disable-next-line
+      console.log('Sending SNS message to', resp.TopicArn);
+
       params.TopicArn = resp.TopicArn;
       return sns.publish(params).promise();
     });
@@ -41,11 +44,12 @@ function runWebhook(data) {
   return sendNotification(data);
 }
 
-function handle(event, context, cb) {
+function handler(event, context, cb) {
+  // eslint-disable-next-line
+  console.log('Running webhook handler');
+
   return getBody(event)
-    .then((body) => {
-      return runWebhook(body);
-    })
+    .then(body => runWebhook(body))
     .then(() => {
       const response = {
         statusCode: 200,
@@ -56,7 +60,10 @@ function handle(event, context, cb) {
       };
       cb(null, response);
     })
-    .catch(() => {
+    .catch((err) => {
+      // eslint-disable-next-line
+      console.warn('Handling event failed:', err);
+
       cb(null, {
         statusCode: 400,
         body: 'Failure in request or in handler',
@@ -65,6 +72,6 @@ function handle(event, context, cb) {
 }
 
 module.exports = {
-  handle,
+  handler,
   runWebhook,
 };

@@ -22,8 +22,10 @@ provider:
         - sns:CreateTopic
         - sns:Publish
         - sns:Subscribe
+        - codepipeline:StartPipelineExecution
       Resource:
-        - arn:aws:sns:${self:provider.region}:*:PRISMIC_LAMBDA_WEBHOOK
+        - arn:aws:sns:${self:provider.region}:*:${env:PRISMIC_SNS_TOPIC_NAME}
+        - arn:aws:codepipeline:${self:provideo.region}:*:${env:CODEPIPELINE_NAME}
 
 custom:
   defaults:
@@ -34,6 +36,12 @@ custom:
 functions:
   webhook:
     description: Handle Prismic.io webhook post and send SNS notification
-    handler: functions/webhook.handle
+    handler: functions/webhook.handler
     events:
       - http: POST webhook
+
+  build:
+    description: Run codepipeline execution triggered by SNS event
+    handler: functions/build.handler
+    events:
+      - sns: ${env:PRISMIC_SNS_TOPIC_NAME}

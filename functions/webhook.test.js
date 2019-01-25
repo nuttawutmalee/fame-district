@@ -14,11 +14,13 @@ beforeEach(() => {
     cb(null, { TopicArn: 'test' });
   });
   process.env.PRISMIC_WEBHOOK_SECRET = 'test';
+  process.env.TOPIC_NAME = 'PRISMIC_LAMBDA_WEBHOOK';
 });
 
 afterEach(() => {
   AWS.restore();
   process.env.PRISMIC_WEBHOOK_SECRET = null;
+  process.env.TOPIC_NAME = null;
 });
 
 test('handles the webhook', () => {
@@ -33,12 +35,8 @@ test('rejects invalid secret', (done) => {
   process.env.PRISMIC_WEBHOOK_SECRET = 'hacker';
   return webhook
     .runWebhook(exampleWebhook)
-    .then(() => {
-      done.fail();
-    })
-    .catch(() => {
-      done();
-    });
+    .then(() => done.fail())
+    .catch(() => done());
 });
 
 test('sends SNS notification', (done) => {

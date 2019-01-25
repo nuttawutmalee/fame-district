@@ -13,7 +13,7 @@
     "create-stack": "export $(cat .env | xargs) && ./bin/create.sh",
     "update-stack": "export $(cat .env | xargs) && ./bin/update.sh",
     "delete-stack": "export $(cat .env | xargs) && ./bin/delete.sh",
-    "precommit": "npm run test"
+    "precommit": "npm run lint && npm run test"
   },
   "repository": {
     "type": "git",
