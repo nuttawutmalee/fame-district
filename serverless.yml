@@ -1,5 +1,5 @@
 ---
-service: prismic-lambda-webhook
+service: prismic-webhook
 
 plugins:
   - serverless-dotenv-plugin
