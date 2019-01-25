@@ -25,7 +25,7 @@ provider:
         - codepipeline:StartPipelineExecution
       Resource:
         - arn:aws:sns:${self:provider.region}:*:${env:PRISMIC_SNS_TOPIC_NAME}
-        - arn:aws:codepipeline:${self:provideo.region}:*:${env:CODEPIPELINE_NAME}
+        - arn:aws:codepipeline:${self:provider.region}:*:${env:CODEPIPELINE_NAME}
 
 custom:
   defaults:

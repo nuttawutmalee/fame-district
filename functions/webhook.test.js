@@ -14,13 +14,13 @@ beforeEach(() => {
     cb(null, { TopicArn: 'test' });
   });
   process.env.PRISMIC_WEBHOOK_SECRET = 'test';
-  process.env.TOPIC_NAME = 'PRISMIC_LAMBDA_WEBHOOK';
+  process.env.PRISMIC_SNS_TOPIC_NAME = 'PRISMIC_LAMBDA_WEBHOOK';
 });
 
 afterEach(() => {
   AWS.restore();
   process.env.PRISMIC_WEBHOOK_SECRET = null;
-  process.env.TOPIC_NAME = null;
+  process.env.PRISMIC_SNS_TOPIC_NAME = null;
 });
 
 test('handles the webhook', () => {

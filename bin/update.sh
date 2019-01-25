@@ -4,8 +4,8 @@ aws cloudformation update-stack \
   --stack-name=$STACK_NAME \
   --template-body=file://cloudformation.yml \
   --capabilities CAPABILITY_IAM \
-  --profile $AWS_PROFILE \
-  --region $AWS_REGION \
+  --profile $STACK_AWS_PROFILE \
+  --region $STACK_AWS_REGION \
   --parameters \
     ParameterKey=EnvType,ParameterValue=$ENV_TYPE \
     ParameterKey=DomainName,ParameterValue=$DOMAIN_NAME \

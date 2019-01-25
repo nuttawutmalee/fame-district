@@ -18,7 +18,7 @@ function sendNotification(msg) {
   };
 
   return sns
-    .createTopic({ Name: process.env.TOPIC_NAME })
+    .createTopic({ Name: process.env.PRISMIC_SNS_TOPIC_NAME })
     .promise()
     .then((resp) => {
       // eslint-disable-next-line
