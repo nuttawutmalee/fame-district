@@ -1,11 +1,10 @@
-const aws = require('aws-sdk');
+const AWS = require('aws-sdk');
 
 function runSNS() {
-  const codepipeline = new aws.CodePipeline();
-  const params = { name: process.env.CODEPIPELINE_NAME };
+  const codepipeline = new AWS.CodePipeline();
 
   return codepipeline
-    .startPipelineExecution(params)
+    .startPipelineExecution({ name: process.env.CODEPIPELINE_NAME })
     .promise()
     .then((resp) => {
       // eslint-disable-next-line
@@ -18,7 +17,7 @@ function handler(event, context, cb) {
   // eslint-disable-next-line
   console.log('Received an event: %o', event);
 
-  return runSNS()
+  runSNS()
     .then(() => {
       cb(null, { message: 'ok' });
     })

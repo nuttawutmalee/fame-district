@@ -1,5 +1,9 @@
 const AWS = require('aws-sdk');
 
+/**
+ * Parse Lambda event object.
+ * @param {object} event Lambda event object.
+ */
 function getBody(event) {
   return new Promise((resolve, reject) => {
     try {
@@ -10,15 +14,24 @@ function getBody(event) {
   });
 }
 
+/**
+ * Create SNS topic to subscribers.
+ * @param {object} msg Request body from REST api endpoint
+ *                     This is basically Prismic webhook's body.
+ * @see https://user-guides.prismic.io/webhooks/webhooks
+ */
 function sendNotification(msg) {
-  const sns = new AWS.SNS();
+  const sns = process.env.IS_OFFLINE
+    ? new AWS.SNS({ endpoint: 'http://127.0.0.1:4002' })
+    : new AWS.SNS();
+
   const params = {
     Message: JSON.stringify(msg),
     TopicArn: null,
   };
 
   return sns
-    .createTopic({ Name: process.env.PRISMIC_SNS_TOPIC_NAME })
+    .createTopic({ Name: process.env.SNS_TOPIC_NAME })
     .promise()
     .then((resp) => {
       // eslint-disable-next-line
@@ -29,6 +42,15 @@ function sendNotification(msg) {
     });
 }
 
+/**
+ * Validate Prismic webhook's body.
+ * - Check matched secret token
+ * - Ignore every api type except 'api-update'
+ *
+ * @param {object} data Request body from REST api endpoint
+ *                      This is basically Prismic webhook's body.
+ * @see https://user-guides.prismic.io/webhooks/webhooks
+ */
 function runWebhook(data) {
   const incomingSecret = data.secret;
   const serviceSecret = process.env.PRISMIC_WEBHOOK_SECRET;
@@ -48,8 +70,8 @@ function handler(event, context, cb) {
   // eslint-disable-next-line
   console.log('Running webhook handler');
 
-  return getBody(event)
-    .then(body => runWebhook(body))
+  getBody(event)
+    .then(runWebhook)
     .then(() => {
       const response = {
         statusCode: 200,

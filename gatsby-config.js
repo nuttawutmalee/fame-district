@@ -8,12 +8,12 @@ require('dotenv').config();
 // eslint-disable-next-line
 require('regenerator-runtime/runtime');
 
-const { SITE_TITLE, SITE_URL, PRISMIC_REPO, PRISMIC_TOKEN } = process.env;
+const { SITE_TITLE, SITE_DOMAIN, PRISMIC_REPO, PRISMIC_TOKEN } = process.env;
 
 module.exports = {
   siteMetadata: {
     title: SITE_TITLE,
-    siteUrl: SITE_URL,
+    siteUrl: `http://${SITE_DOMAIN}`,
   },
   plugins: [
     'gatsby-transformer-sharp',
@@ -47,8 +47,8 @@ module.exports = {
     {
       resolve: 'gatsby-plugin-robots-txt',
       options: {
-        host: SITE_URL,
-        sitemap: `${SITE_URL}/sitemap.xml`,
+        host: `http://${SITE_DOMAIN}`,
+        sitemap: `http://${SITE_DOMAIN}/sitemap.xml`,
         env: {
           development: {
             policy: [{ userAgent: '*', disallow: ['/'] }],
